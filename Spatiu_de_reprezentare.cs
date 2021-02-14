@@ -11,19 +11,19 @@ using System.Windows.Forms;
 
 namespace POS_Tagging
 {
-    public partial class Form1 : Form
+    public partial class Spatiu_de_reprezentare : Form
     {
         private List<string> predicted = new List<string>();
         private List<KeyValuePair<string, string>> training_data = new List<KeyValuePair<string, string>>();
         //StreamReader file = new StreamReader("ca01.txt");
 
-        public Form1()
+        public Spatiu_de_reprezentare()
         {
             InitializeComponent();
             ReadCorpus();
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void button_Predict_Click(object sender, EventArgs e)
         {
             foreach (KeyValuePair<string, string> item in training_data)
             {
