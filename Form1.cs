@@ -15,7 +15,7 @@ namespace POS_Tagging
     {
         private List<string> predicted = new List<string>();
         private List<KeyValuePair<string, string>> training_data = new List<KeyValuePair<string, string>>();
-        StreamReader file = new StreamReader("ca01.txt");
+        //StreamReader file = new StreamReader("ca01.txt");
 
         public Form1()
         {
@@ -38,25 +38,32 @@ namespace POS_Tagging
         }
         public void ReadCorpus()
         {
-            string line = String.Empty;
+            string rootPath = @"C:\Users\iulia.severin\source\repos\POS-Tagging\bin\Debug\brown";
+            var files = Directory.GetFiles(rootPath, "*.*", SearchOption.AllDirectories);
             string[] pos_tag;
 
-            while ((line = file.ReadLine()) != null)
+            foreach (string file in files)
             {
-                char[] separators = new char[] { '/', ' ' };
-                pos_tag = line.Split(separators, StringSplitOptions.RemoveEmptyEntries); //Split
-
-                for (int i = 0; i < pos_tag.Length; i += 2)
+                using (StreamReader reader = new StreamReader(file))
                 {
-                    training_data.Add(new KeyValuePair<string, string>(pos_tag[i + 1], pos_tag[i]));
+                    string lines = reader.ReadToEnd();
+                    char[] separators = new char[] { '/', ' ' };
+                    pos_tag = lines.Split(separators, StringSplitOptions.RemoveEmptyEntries); //Split
+
+                    for (int i = 0; i < pos_tag.Length-1; i += 2)
+                    {
+                        training_data.Add(new KeyValuePair<string, string>(pos_tag[i + 1], pos_tag[i]));
+                    }
                 }
+                //Console.WriteLine(Path.GetFileName(file));
             }
 
+            //afisare perechi parte de vorbire - tag
             //foreach (KeyValuePair<string, string> item in training_data.Where(item => item.Key == "nn"))
             /* foreach (KeyValuePair<string, string> item in training_data)
             {
                 Console.WriteLine("Key = {0}, Value = {1}", item.Key, item.Value);
-            }*/
+            } */
         }
     }
 }
