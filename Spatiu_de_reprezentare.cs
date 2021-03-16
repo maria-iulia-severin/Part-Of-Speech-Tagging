@@ -1,21 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace POS_Tagging
 {
+
     public partial class Spatiu_de_reprezentare : Form
     {
-        private List<string> predicted = new List<string>();
-        private List<KeyValuePair<string, string>> training_data = new List<KeyValuePair<string, string>>();
-        //StreamReader file = new StreamReader("ca01.txt");
+        //ingore symbols - filter
+        private bool IgnoredSymbols(string word)
+        {
+            string[] ignored_symbols = { "''" , ",", ":", ".", "(", ")", "``", "?", "!", ";", "--" };
+            int length = ignored_symbols.Length;
+
+            for (int i = 0; i < length; i++)
+            {
+                //if contains this simbole, ignore all ? pt --hl --tl
+                if (word == ignored_symbols[i])
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
 
         public Spatiu_de_reprezentare()
         {
@@ -23,110 +31,73 @@ namespace POS_Tagging
             ReadCorpus();
         }
 
-        private void button_Predict_Click(object sender, EventArgs e)
-        {
-            foreach (KeyValuePair<string, string> item in training_data)
-            {
-                //Console.WriteLine("Key = {0}, Value = {1}", item.Key, item.Value);
-                predicted.Add(Predict(item));
-            }
-            predicted.ToList().ForEach(Console.WriteLine);
-        }
-        private string Predict(KeyValuePair<string, string> word)
-        {
-            return "noun";
-        }
+        string[] word_array = new string[60000];
+        string[] tag_array = new string[600];
+        int word_count = 0;
+        int tag_count = 0;
         public void ReadCorpus()
         {
             string rootPath = @"C:\Users\iulia.severin\source\repos\POS-Tagging\bin\Debug\brown";
             var files = Directory.GetFiles(rootPath, "*.*", SearchOption.AllDirectories);
-            string[] pos_tag;
+            string[] word_tag_pair; //
+            char[] separators = new char[] { ' ', '\r', '\n', '\t' };
 
             foreach (string file in files)
             {
                 using (StreamReader reader = new StreamReader(file))
                 {
-                    string lines = reader.ReadToEnd();
-                    char[] separators = new char[] { '/', ' ' };
-                    pos_tag = lines.Split(separators, StringSplitOptions.RemoveEmptyEntries); //Split
+                    string text_in_file = reader.ReadToEnd();
 
-                    for (int i = 0; i < pos_tag.Length-1; i += 2)
+                    word_tag_pair = text_in_file.Split(separators, StringSplitOptions.RemoveEmptyEntries); //Split
+                    
+                    for(int i = 0; i < word_tag_pair.Length; i++)
                     {
-                        training_data.Add(new KeyValuePair<string, string>(pos_tag[i + 1], pos_tag[i]));
+                        string[] word_tag_split = word_tag_pair[i].Split('/');
+                        //add words
+                        AddWord(word_tag_split[0]);
+                        //add tags
+                        AddTag(word_tag_split[1]);
+
                     }
                 }
-                //Console.WriteLine(Path.GetFileName(file));
+            }
+        }
+
+        private void AddWord(string word)
+        {
+            bool exists_in_array = false;
+            for (int j = 0; j < word_count; j++)
+            {
+                if (word_array[j] == word)
+                {
+                    exists_in_array = true;
+                    break;
+                }
+            }
+            if (!exists_in_array && !IgnoredSymbols(word))
+            {
+                word_array[word_count] = word;
+                word_count++;
+            }
+        }
+
+        private void AddTag(string tag)
+        {
+            bool exists_in_array = false;
+            for (int j = 0; j < tag_count; j++)
+            {
+                if (tag_array[j] == tag)
+                {
+                    exists_in_array = true;
+                    break;
+                }
+            }
+            if (!exists_in_array && !IgnoredSymbols(tag))
+            {
+                tag_array[tag_count] = tag;
+                tag_count++;
             }
 
-            //afisare perechi parte de vorbire - tag
-            //foreach (KeyValuePair<string, string> item in training_data.Where(item => item.Key == "nn"))
-            /* foreach (KeyValuePair<string, string> item in training_data)
-            {
-                Console.WriteLine("Key = {0}, Value = {1}", item.Key, item.Value);
-            } */
         }
     }
 }
-
-//Dictionary
-//private Dictionary<string, string> training_data = new Dictionary<string, string>();
-/*   
-
-//dupa ce am facut line.Split - verific ce am in pos_tag
-if (pos_tag.Length < 2) // If we get less than 2 results, discard them
-      continue;
-  else if (pos_tag.Length == 2) // If there are 2 results, add them to the dictionary
-      training_data.Add(pos_tag[0].Trim(), pos_tag[1].Trim());
-  else if (pos_tag.Length > 2)
-      Split_pos_tag(pos_tag, training_data); //If there are more than 2 results
-}}
-
-public void Split_pos_tag(string[] stringInput, Dictionary<string, string> dictionaryInput)
-{
-StringBuilder sb = new StringBuilder();
-List<string> temporaryList = new List<string>(); // This list will hold the keys and values as we find them
-bool hasFirstValue = false;
-foreach (string s in stringInput)
-{
-    foreach (char c in s) // Iterate through each character in the input
-    {
-        if (c != '/')  // Keep building the string until we reach a "/"
-            sb.Append(c);
-        else if (c == '/' && !hasFirstValue)
-        {
-            temporaryList.Add(sb.ToString().Trim());
-            sb.Clear();
-            hasFirstValue = true;
-        }
-        else if (c == '/' && hasFirstValue)
-        {
-            string[] pos_tag_pair = sb.ToString()
-                                    .Trim()
-                                    .Split(new string[] { "  " },
-                                            StringSplitOptions.RemoveEmptyEntries);
-
-            // Add both results to the list
-            temporaryList.Add(pos_tag_pair[0].Trim());
-            //  temporaryList.Add(pos_tag_pair[1].Trim());
-            sb.Clear();
-        }
-    }
-}
-temporaryList.Add(sb.ToString().Trim()); // Add the last result to the list
-
-for (int i = 0; i < temporaryList.Count; i += 2)
-{
-
-    //adauga in lista cat timp nu exista duplicates
-    if (!dictionaryInput.ContainsKey(temporaryList[i+1]))
-    {
-        dictionaryInput.Add(temporaryList[i+1], temporaryList[i]);
-    }
-
-}
-
-foreach (KeyValuePair<string, string> kvp in dictionaryInput)
-{
-    Console.WriteLine("Key = {0}, Value = {1}", kvp.Key, kvp.Value);
-}
-}*/
