@@ -41,8 +41,33 @@ namespace POS_Tagging
             var files = Directory.GetFiles(rootPath, "*.*", SearchOption.AllDirectories);
             string[] word_tag_pair; //
             char[] separators = new char[] { ' ', '\r', '\n', '\t' };
-
+            int count_words = 0;
             //Tag - Words in array
+            foreach (string file in files)
+            {
+                using (StreamReader reader = new StreamReader(file))
+                {
+                    string text_in_file = reader.ReadToEnd();
+
+                    word_tag_pair = text_in_file.Split(separators, StringSplitOptions.RemoveEmptyEntries); //Split
+                    count_words += word_tag_pair.Length;
+
+                    for (int i = 0; i < word_tag_pair.Length; i++)
+                    {
+                        //string[] word_tag_split = word_tag_pair[i].Split('/');
+                        string[] word_tag_split = SpitPair(word_tag_pair[i]);
+                        //add words
+                        AddWord(word_tag_split[0]);
+                        //add tags
+                        AddTag(word_tag_split[1]);
+
+                    }
+                }
+            }
+            Console.WriteLine(count_words);
+            int[,] matrix = new int[word_array.Length, tag_array.Length];
+
+            //Tag - Words in Matrix
             foreach (string file in files)
             {
                 using (StreamReader reader = new StreamReader(file))
@@ -55,43 +80,47 @@ namespace POS_Tagging
                     {
                         //string[] word_tag_split = word_tag_pair[i].Split('/');
                         string[] word_tag_split = SpitPair(word_tag_pair[i]);
-                        //add words
-                        AddWord(word_tag_split[0]);
-                        //add tags
-                        AddTag(word_tag_split[1]);
-
+                        matrix[GetWordPosition(word_tag_split[0]), GetTagPosition(word_tag_split[1])]++;
                     }
                 }
             }
-
-            //Tag - Words in Matrix
-     /*       foreach (string file in files)
+/*
+            for (int i = 0; i < word_array.Length; i++)
             {
-                using (StreamReader reader = new StreamReader(file))
-                {
-                    string text_in_file = reader.ReadToEnd();
+                for (int j = 0; j < tag_array.Length; j++)
+                { 
+                    Console.Write(matrix[i,j] + " "); 
 
-                    word_tag_pair = text_in_file.Split(separators, StringSplitOptions.RemoveEmptyEntries); //Split
-
-                    for (int i = 0; i < word_tag_pair.Length; i++)
-                    {
-                        //string[] word_tag_split = word_tag_pair[i].Split('/');
-                        string[] word_tag_split = SpitPair(word_tag_pair[i]);
-                        //add words
-                        AddWord(word_tag_split[0]);
-                        //add tags
-                        AddTag(word_tag_split[1]);
-
-                    }
                 }
+                Console.Write("\n");
             }*/
-
+            /*     for (int i = 0; i < tag_array.Length; i++)
+                 {
+                     Console.WriteLine(tag_array[i]);
+                 }*/
+        }
+        private int GetTagPosition(string tag)
+        {
             for (int i = 0; i < tag_array.Length; i++)
             {
-                Console.WriteLine(tag_array[i]);
+                if (tag == tag_array[i])
+                {
+                    return i;
+                }
             }
+            return -1;
         }
-
+        private int GetWordPosition(string word)
+        {
+            for (int i = 0; i < word_array.Length; i++)
+            {
+                if (word == word_array[i])
+                {
+                    return i;
+                }
+            }
+            return -1;
+        }
         private static string[] SpitPair(string word_tag_pair)
         {
 
