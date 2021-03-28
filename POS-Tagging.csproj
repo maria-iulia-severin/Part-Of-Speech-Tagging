@@ -54,6 +54,7 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="WordTags.cs" />
     <EmbeddedResource Include="Spatiu_de_reprezentare.resx">
       <DependentUpon>Spatiu_de_reprezentare.cs</DependentUpon>
     </EmbeddedResource>
