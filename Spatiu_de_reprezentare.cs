@@ -8,14 +8,22 @@ namespace POS_Tagging
     public partial class Spatiu_de_reprezentare : Form
     {
         string[] noun = { "nn", "nn$", "nns", "nns$", "np", "np$", "nps", "nps$", "nrs" };
-        string[] verb = { " " };
-        string[] adjective = { " " };
-        string[] adverb = { " " };
-        string[] pronoun = { " " };
-        string[] conjunction = { " " };
-        string[] article = { " " };
-        string[] preposition = { " " };
-        string[] other = { " " };
+        string[] verb = { "be", "bed", "bedz", "beg", "bem", "ben", "ber", "bez", "do", "dod", "doz", "hv", "hvd", "hvg", "hvn", "hvz", "md", "vb", "vbd", "vbg", "vbn", "vbz" };
+        string[] adjective = { "jj", "jjr", "jjs", "jjt" };
+        string[] adverb = { "rb", "rbr", "rbt", "rn", "rp", "wrb", "nr " };
+        string[] pronoun = { "pn", "pn$", "pp", "pp$", "pp$$", "ppl", "ppls", "ppo", "pps", "ppss", "wp$", "wpo", "wps" };
+        string[] conjunction = { "cs", "cc" };
+        string[] article = { "at" };
+        string[] preposition = { "in", "to" };
+        string[] other = { "uh", "abl", "abn", "abx", "ap", "cd", "dt", "dti", "dts", "dtx", "ex", "fw", "od", "ql", "qlp", "wdt", "wql", "nc", "hl", "tl" };
+
+        string[] word_array = new string[60000];
+        string[] tag_array = new string[600];
+        int[,] matrix = new int[60000, 600];
+        int word_count = 0;
+        int tag_count = 0;
+        int count_words = 0;
+
         //ingore symbols - filter
         private bool IgnoredSymbols(string word)
         {
@@ -32,20 +40,12 @@ namespace POS_Tagging
             }
             return false;
         }
-
         public Spatiu_de_reprezentare()
         {
             InitializeComponent();
             ReadCorpus();
-            Console.WriteLine(Predict("shelter"));
+            Console.WriteLine("Prediction:" + Predict("me"));
         }
-
-        string[] word_array = new string[60000];
-        string[] tag_array = new string[600];
-        int[,] matrix = new int[60000, 600];
-        int word_count = 0;
-        int tag_count = 0;
-        int count_words = 0;
         public void ReadCorpus()
         {
             string rootPath = @"C:\Users\iulia.severin\source\repos\POS-Tagging\bin\Debug\brown";
@@ -102,9 +102,25 @@ namespace POS_Tagging
                     }
                 }
             }
-
-
-            Console.WriteLine(GetNounFrequence());
+            Console.WriteLine("Noun Percentage: " + GetNounFrequence());
+            Console.WriteLine("\n");
+            Console.WriteLine("Verb Percentage: " + GetVerbFrequence());
+            Console.WriteLine("\n");
+            Console.WriteLine("Adjective Percentage: " + GetAdjectiveFrequence());
+            Console.WriteLine("\n");
+            Console.WriteLine("Article Percentage: " + GetArticleFrequence());
+            Console.WriteLine("\n");
+            Console.WriteLine("Adverb Percentage: " + GetAdverbFrequence());
+            Console.WriteLine("\n");
+            Console.WriteLine("Conjuction Percentage: " + GetConjunctionFrequence());
+            Console.WriteLine("\n");
+            Console.WriteLine("Preposition Percentage: " + GetPrepositionFrequence());
+            Console.WriteLine("\n");
+            Console.WriteLine("Pronoun Percentage: " + GetPronounFrequence());
+            Console.WriteLine("\n");
+            Console.WriteLine("Other Percentage: " + GetOtherFrequence());
+            
+            //afisare matrice
             /* for (int i = 0; i < word_array.Length; i++)
              {
                  for (int j = 0; j < tag_array.Length; j++)
@@ -113,6 +129,7 @@ namespace POS_Tagging
                  }
                  Console.Write("\n");
              }
+            //afisare tags
              for (int i = 0; i < tag_array.Length; i++)
              {
                  Console.WriteLine(tag_array[i]);
@@ -133,40 +150,6 @@ namespace POS_Tagging
             }
             return tag_array[maxFrequencePosition];
         }
-        private double GetNounFrequence()
-        {
-            int[] nounPositions = GetNounIndexes();
-            int nounsSum = 0;
-            for (int i = 0; i < word_array.Length; i++)
-            {
-                for (int j = 0; j < nounPositions.Length; j++)
-                {
-                    nounsSum += matrix[i, nounPositions[j]];
-                }
-            }
-            Console.WriteLine(nounsSum);
-            Console.WriteLine(count_words);
-            return 1.0 * nounsSum / count_words;
-        }
-
-        private int[] GetNounIndexes()
-        {
-            int[] positions = new int[noun.Length];
-
-            for (int i = 0; i < noun.Length; i++)
-            {
-                for (int j = 0; j < tag_array.Length; j++)
-                {
-                    if (noun[i] == tag_array[j])
-                    {
-                        positions[i] = j;
-                        break;
-                    }
-                }
-            }
-            return positions;
-        }
-
         private int GetTagPosition(string tag)
         {
             for (int i = 0; i < tag_array.Length; i++)
@@ -235,7 +218,6 @@ namespace POS_Tagging
                 word_count++;
             }
         }
-
         private void AddTag(string tag)
         {
             bool exists_in_array = false;
@@ -254,6 +236,295 @@ namespace POS_Tagging
                 tag_count++;
             }
 
+        }
+        //NOUN
+        private double GetNounFrequence()
+        {
+            int[] nounPositions = GetNounIndexes();
+            int nounsSum = 0;
+            for (int i = 0; i < word_array.Length; i++)
+            {
+                for (int j = 0; j < nounPositions.Length; j++)
+                {
+                    nounsSum += matrix[i, nounPositions[j]];
+                }
+            }
+            Console.WriteLine("No. Appearances nouns:" + nounsSum);
+            Console.WriteLine("Total number of words:" + count_words);
+            return 1.0 * nounsSum / count_words;
+        }
+        private int[] GetNounIndexes()
+        {
+            int[] positions = new int[noun.Length];
+
+            for (int i = 0; i < noun.Length; i++)
+            {
+                for (int j = 0; j < tag_array.Length; j++)
+                {
+                    if (noun[i] == tag_array[j])
+                    {
+                        positions[i] = j;
+                        break;
+                    }
+                }
+            }
+            return positions;
+        }
+        //VERB
+        private double GetVerbFrequence()
+        {
+            int[] verbPositions = GetVerbIndexes();
+            int verbsSum = 0;
+            for (int i = 0; i < word_array.Length; i++)
+            {
+                for (int j = 0; j < verbPositions.Length; j++)
+                {
+                    verbsSum += matrix[i, verbPositions[j]];
+                }
+            }
+            Console.WriteLine("No. Appearances verbs:" + verbsSum);
+            return 1.0 * verbsSum / count_words;
+        }
+        private int[] GetVerbIndexes()
+        {
+            int[] positions = new int[verb.Length];
+
+            for (int i = 0; i < verb.Length; i++)
+            {
+                for (int j = 0; j < tag_array.Length; j++)
+                {
+                    if (verb[i] == tag_array[j])
+                    {
+                        positions[i] = j;
+                        break;
+                    }
+                }
+            }
+            return positions;
+        }
+        //ADJECTIVE
+        private double GetAdjectiveFrequence()
+        {
+            int[] adjectivePositions = GetAdjectiveIndexes();
+            int adjectivesSum = 0;
+            for (int i = 0; i < word_array.Length; i++)
+            {
+                for (int j = 0; j < adjectivePositions.Length; j++)
+                {
+                    adjectivesSum += matrix[i, adjectivePositions[j]];
+                }
+            }
+            Console.WriteLine("No. Appearances adjectives:" + adjectivesSum);
+            return 1.0 * adjectivesSum / count_words;
+        }
+        private int[] GetAdjectiveIndexes()
+        {
+            int[] positions = new int[adjective.Length];
+
+            for (int i = 0; i < adjective.Length; i++)
+            {
+                for (int j = 0; j < tag_array.Length; j++)
+                {
+                    if (adjective[i] == tag_array[j])
+                    {
+                        positions[i] = j;
+                        break;
+                    }
+                }
+            }
+            return positions;
+        }
+        //ADVERB
+        private double GetAdverbFrequence()
+        {
+            int[] adverbPositions = GetAdverbIndexes();
+            int adverbsSum = 0;
+            for (int i = 0; i < word_array.Length; i++)
+            {
+                for (int j = 0; j < adverbPositions.Length; j++)
+                {
+                    adverbsSum += matrix[i, adverbPositions[j]];
+                }
+            }
+            Console.WriteLine("No. Appearances adverbs:" + adverbsSum);
+            return 1.0 * adverbsSum / count_words;
+        }
+        private int[] GetAdverbIndexes()
+        {
+            int[] positions = new int[adverb.Length];
+
+            for (int i = 0; i < adverb.Length; i++)
+            {
+                for (int j = 0; j < tag_array.Length; j++)
+                {
+                    if (adverb[i] == tag_array[j])
+                    {
+                        positions[i] = j;
+                        break;
+                    }
+                }
+            }
+            return positions;
+        }
+        //PRONOUN
+        private double GetPronounFrequence()
+        {
+            int[] pronounPositions = GetPronounIndexes();
+            int pronounsSum = 0;
+            for (int i = 0; i < word_array.Length; i++)
+            {
+                for (int j = 0; j < pronounPositions.Length; j++)
+                {
+                    pronounsSum += matrix[i, pronounPositions[j]];
+                }
+            }
+            Console.WriteLine("No. Appearances pronouns:" + pronounsSum);
+            return 1.0 * pronounsSum / count_words;
+        }
+        private int[] GetPronounIndexes()
+        {
+            int[] positions = new int[pronoun.Length];
+
+            for (int i = 0; i < pronoun.Length; i++)
+            {
+                for (int j = 0; j < tag_array.Length; j++)
+                {
+                    if (pronoun[i] == tag_array[j])
+                    {
+                        positions[i] = j;
+                        break;
+                    }
+                }
+            }
+            return positions;
+        }
+        //CONJUNCTION
+        private double GetConjunctionFrequence()
+        {
+            int[] conjunctionPositions = GetConjunctionIndexes();
+            int conjunctionsSum = 0;
+            for (int i = 0; i < word_array.Length; i++)
+            {
+                for (int j = 0; j < conjunctionPositions.Length; j++)
+                {
+                    conjunctionsSum += matrix[i, conjunctionPositions[j]];
+                }
+            }
+            Console.WriteLine("No. Appearances conjunctions:" + conjunctionsSum);
+            return 1.0 * conjunctionsSum / count_words;
+        }
+        private int[] GetConjunctionIndexes()
+        {
+            int[] positions = new int[conjunction.Length];
+
+            for (int i = 0; i < conjunction.Length; i++)
+            {
+                for (int j = 0; j < tag_array.Length; j++)
+                {
+                    if (conjunction[i] == tag_array[j])
+                    {
+                        positions[i] = j;
+                        break;
+                    }
+                }
+            }
+            return positions;
+        }
+        //ARTICLE 
+        private double GetArticleFrequence()
+        {
+            int[] articlePositions = GetArticleIndexes();
+            int articlesSum = 0;
+            for (int i = 0; i < word_array.Length; i++)
+            {
+                for (int j = 0; j < articlePositions.Length; j++)
+                {
+                    articlesSum += matrix[i, articlePositions[j]];
+                }
+            }
+            Console.WriteLine("No. Appearances articles:" + articlesSum);
+            return 1.0 * articlesSum / count_words;
+        }
+        private int[] GetArticleIndexes()
+        {
+            int[] positions = new int[article.Length];
+
+            for (int i = 0; i < article.Length; i++)
+            {
+                for (int j = 0; j < tag_array.Length; j++)
+                {
+                    if (article[i] == tag_array[j])
+                    {
+                        positions[i] = j;
+                        break;
+                    }
+                }
+            }
+            return positions;
+        }
+        //PREPOSITION 
+        private double GetPrepositionFrequence()
+        {
+            int[] prepositionPositions = GetPrepositionIndexes();
+            int prepositionsSum = 0;
+            for (int i = 0; i < word_array.Length; i++)
+            {
+                for (int j = 0; j < prepositionPositions.Length; j++)
+                {
+                    prepositionsSum += matrix[i, prepositionPositions[j]];
+                }
+            }
+            Console.WriteLine("No. Appearances prepositions:" + prepositionsSum);
+            return 1.0 * prepositionsSum / count_words;
+        }
+        private int[] GetPrepositionIndexes()
+        {
+            int[] positions = new int[preposition.Length];
+
+            for (int i = 0; i < preposition.Length; i++)
+            {
+                for (int j = 0; j < tag_array.Length; j++)
+                {
+                    if (preposition[i] == tag_array[j])
+                    {
+                        positions[i] = j;
+                        break;
+                    }
+                }
+            }
+            return positions;
+        }
+        //OTHER 
+        private double GetOtherFrequence()
+        {
+            int[] otherPositions = GetOtherIndexes();
+            int othersSum = 0;
+            for (int i = 0; i < word_array.Length; i++)
+            {
+                for (int j = 0; j < otherPositions.Length; j++)
+                {
+                    othersSum += matrix[i, otherPositions[j]];
+                }
+            }
+            Console.WriteLine("No. Appearances others:" + othersSum);
+            return 1.0 * othersSum / count_words;
+        }
+        private int[] GetOtherIndexes()
+        {
+            int[] positions = new int[other.Length];
+
+            for (int i = 0; i < other.Length; i++)
+            {
+                for (int j = 0; j < tag_array.Length; j++)
+                {
+                    if (other[i] == tag_array[j])
+                    {
+                        positions[i] = j;
+                        break;
+                    }
+                }
+            }
+            return positions;
         }
     }
 }
