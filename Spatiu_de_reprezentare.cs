@@ -7,11 +7,11 @@ namespace POS_Tagging
 {
     public partial class Spatiu_de_reprezentare : Form
     {
-        string[] noun = { "nn", "nn$", "nns", "nns$", "np", "np$", "nps", "nps$", "nrs" };
+        string[] noun = { "nn", "nns", "np", "nps", "nrs" };
         string[] verb = { "be", "bed", "bedz", "beg", "bem", "ben", "ber", "bez", "do", "dod", "doz", "hv", "hvd", "hvg", "hvn", "hvz", "md", "vb", "vbd", "vbg", "vbn", "vbz" };
         string[] adjective = { "jj", "jjr", "jjs", "jjt" };
-        string[] adverb = { "rb", "rbr", "rbt", "rn", "rp", "wrb", "nr " };
-        string[] pronoun = { "pn", "pn$", "pp", "pp$", "pp$$", "ppl", "ppls", "ppo", "pps", "ppss", "wp$", "wpo", "wps" };
+        string[] adverb = { "rb", "rbr", "rbt", "rn", "rp", "wrb", "nr" };
+        string[] pronoun = { "pn", "pp", "ppl", "ppls", "ppo", "pps", "ppss", "wp", "wpo", "wps" };
         string[] conjunction = { "cs", "cc" };
         string[] article = { "at" };
         string[] preposition = { "in", "to" };
@@ -50,7 +50,7 @@ namespace POS_Tagging
         {
             string rootPath = @"C:\Users\iulia.severin\source\repos\POS-Tagging\bin\Debug\brown";
             var files = Directory.GetFiles(rootPath, "*.*", SearchOption.AllDirectories);
-            string[] word_tag_pair; //
+            string[] word_tag_pair;
             char[] separators = new char[] { ' ', '\r', '\n', '\t' };
 
             //Tag - Words in array
@@ -75,7 +75,6 @@ namespace POS_Tagging
                             //add tags
                             AddTag(word_tag_split.tags[j]);
                         }
-
                     }
                 }
             }
@@ -119,7 +118,12 @@ namespace POS_Tagging
             Console.WriteLine("Pronoun Percentage: " + GetPronounFrequence());
             Console.WriteLine("\n");
             Console.WriteLine("Other Percentage: " + GetOtherFrequence());
-            
+            for (int i = 0; i < tag_array.Length; i++)
+            {
+                if (tag_array[i] != "")
+                    Console.WriteLine(tag_array[i]); //ar trebui sa nu imi mai afiseze nimic dupa ce scap de tot ce nu am nevoie din ala de tag
+            }
+
             //afisare matrice
             /* for (int i = 0; i < word_array.Length; i++)
              {
@@ -193,7 +197,7 @@ namespace POS_Tagging
             word_tag_return.word = word_tag_pair.Substring(0, i);
             Array.Reverse(tag);
             tagGroup = new string(tag).Trim('\0');
-            word_tag_return.tags = new List<string>(tagGroup.Split(new char[] { '-', '+', '*', ' ' }, StringSplitOptions.RemoveEmptyEntries));
+            word_tag_return.tags = new List<string>(tagGroup.Split(new char[] { '-', '+', '*', ' ', '`', '\'', '.', ',', ':', '(', ')', '$' }, StringSplitOptions.RemoveEmptyEntries));
 
             return word_tag_return;
         }
@@ -240,7 +244,7 @@ namespace POS_Tagging
         //NOUN
         private double GetNounFrequence()
         {
-            int[] nounPositions = GetNounIndexes();
+            int[] nounPositions = GetTagIndexes(noun);
             int nounsSum = 0;
             for (int i = 0; i < word_array.Length; i++)
             {
@@ -252,6 +256,24 @@ namespace POS_Tagging
             Console.WriteLine("No. Appearances nouns:" + nounsSum);
             Console.WriteLine("Total number of words:" + count_words);
             return 1.0 * nounsSum / count_words;
+        }
+        private int[] GetTagIndexes(string[] value)
+        {
+            int[] positions = new int[value.Length];
+
+            for (int i = 0; i < value.Length; i++)
+            {
+                for (int j = 0; j < tag_array.Length; j++)
+                {
+                    if (value[i] == tag_array[j])
+                    {
+                        positions[i] = j;
+                        tag_array[j] = "";
+                        break;
+                    }
+                }
+            }
+            return positions;
         }
         private int[] GetNounIndexes()
         {
@@ -273,7 +295,7 @@ namespace POS_Tagging
         //VERB
         private double GetVerbFrequence()
         {
-            int[] verbPositions = GetVerbIndexes();
+            int[] verbPositions = GetTagIndexes(verb);
             int verbsSum = 0;
             for (int i = 0; i < word_array.Length; i++)
             {
@@ -305,7 +327,7 @@ namespace POS_Tagging
         //ADJECTIVE
         private double GetAdjectiveFrequence()
         {
-            int[] adjectivePositions = GetAdjectiveIndexes();
+            int[] adjectivePositions = GetTagIndexes(adjective);
             int adjectivesSum = 0;
             for (int i = 0; i < word_array.Length; i++)
             {
@@ -337,7 +359,7 @@ namespace POS_Tagging
         //ADVERB
         private double GetAdverbFrequence()
         {
-            int[] adverbPositions = GetAdverbIndexes();
+            int[] adverbPositions = GetTagIndexes(adverb);
             int adverbsSum = 0;
             for (int i = 0; i < word_array.Length; i++)
             {
@@ -369,7 +391,7 @@ namespace POS_Tagging
         //PRONOUN
         private double GetPronounFrequence()
         {
-            int[] pronounPositions = GetPronounIndexes();
+            int[] pronounPositions = GetTagIndexes(pronoun);
             int pronounsSum = 0;
             for (int i = 0; i < word_array.Length; i++)
             {
@@ -401,7 +423,7 @@ namespace POS_Tagging
         //CONJUNCTION
         private double GetConjunctionFrequence()
         {
-            int[] conjunctionPositions = GetConjunctionIndexes();
+            int[] conjunctionPositions = GetTagIndexes(conjunction);
             int conjunctionsSum = 0;
             for (int i = 0; i < word_array.Length; i++)
             {
@@ -433,7 +455,7 @@ namespace POS_Tagging
         //ARTICLE 
         private double GetArticleFrequence()
         {
-            int[] articlePositions = GetArticleIndexes();
+            int[] articlePositions = GetTagIndexes(article);
             int articlesSum = 0;
             for (int i = 0; i < word_array.Length; i++)
             {
@@ -465,7 +487,7 @@ namespace POS_Tagging
         //PREPOSITION 
         private double GetPrepositionFrequence()
         {
-            int[] prepositionPositions = GetPrepositionIndexes();
+            int[] prepositionPositions = GetTagIndexes(preposition);
             int prepositionsSum = 0;
             for (int i = 0; i < word_array.Length; i++)
             {
@@ -497,7 +519,7 @@ namespace POS_Tagging
         //OTHER 
         private double GetOtherFrequence()
         {
-            int[] otherPositions = GetOtherIndexes();
+            int[] otherPositions = GetTagIndexes(other);
             int othersSum = 0;
             for (int i = 0; i < word_array.Length; i++)
             {
