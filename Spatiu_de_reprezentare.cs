@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Windows.Forms;
+using System.Linq;
 
 namespace POS_Tagging
 {
@@ -17,25 +18,65 @@ namespace POS_Tagging
         string[] preposition = { "in", "to" };
         string[] other = { "uh", "abl", "abn", "abx", "ap", "cd", "dt", "dti", "dts", "dtx", "ex", "fw", "od", "ql", "qlp", "wdt", "wql", "nc", "hl", "tl" };
 
-        //string[] word_array = new string[60000];
-        //string[] tag_array = new string[600];
-        List<String> word_array = new List<string>();
-        List<String> tag_array = new List<string>();
-        //int[,] matrix = new int[60000, 600];
+        List<String> wordTrainArray = new List<string>();
+        List<String> tagTrainArray = new List<string>();
+
+        List<String> wordTestArray = new List<string>();
+        List<String> tagTestArray = new List<string>();
+        List<WordTags> wordTagTestArray = new List<WordTags>();
+
         int[,] matrix;
-        int word_count = 0;
-        int tag_count = 0;
-        int count_total_words = 0;
+        // int wordCount = 0; // de sters
+        //int tagCount = 0; // de sters
+        int countTotalWordsTrain = 0;
+        int countTotalWordsTest = 0;
 
         public Spatiu_de_reprezentare()
         {
             InitializeComponent();
-            ReadCorpus();
-            Console.WriteLine("Prediction:" + Predict("me"));
+            //ReadCorpus();
+            //Console.WriteLine("Prediction:" + Predict("me"));
         }
-        public void ReadCorpus()
+        private void btnReadCorpus_Click(object sender, EventArgs e)
         {
-            string rootPath = @"C:\Users\iulia.severin\source\repos\POS-Tagging\bin\Debug\brown";
+            ReadCorpus();
+        }
+        private void ReadBrownTest()
+        {
+            string rootPath = @"C:\Users\iulia.severin\source\repos\POS-Tagging\bin\Debug\Brown_Test";
+            var files = Directory.GetFiles(rootPath, "*.*", SearchOption.AllDirectories);
+            string[] wordTagPair;
+            char[] separators = new char[] { ' ', '\r', '\n', '\t' };
+
+            //Add pair Word-Tags in array
+            foreach (string file in files)
+            {
+                using (StreamReader reader = new StreamReader(file))
+                {
+                    string textInFile = reader.ReadToEnd();
+
+                    wordTagPair = textInFile.Split(separators, StringSplitOptions.RemoveEmptyEntries);
+                    countTotalWordsTest += wordTagPair.Length;
+
+                    for (int i = 0; i < wordTagPair.Length; i++)
+                    {
+                        WordTags wordTagSplit = SpitPair(wordTagPair[i]);
+                        wordTagTestArray.Add(wordTagSplit);
+
+                        AddWordInTest(wordTagSplit.word);
+
+                        for (int j = 0; j < wordTagSplit.tags.Count; j++)
+                        {
+                            AddTagInTest(wordTagSplit.tags[j]);
+                        }
+                    }
+                }
+            }
+        }
+        private void ReadCorpus()
+        {
+            //string rootPath = @"C:\Users\iulia.severin\source\repos\POS-Tagging\bin\Debug\Brown";
+            string rootPath = @"C:\Users\iulia.severin\source\repos\POS-Tagging\bin\Debug\Brown_Train";
             var files = Directory.GetFiles(rootPath, "*.*", SearchOption.AllDirectories);
             string[] word_tag_pair;
             char[] separators = new char[] { ' ', '\r', '\n', '\t' };
@@ -48,39 +89,36 @@ namespace POS_Tagging
                     string text_in_file = reader.ReadToEnd();
 
                     word_tag_pair = text_in_file.Split(separators, StringSplitOptions.RemoveEmptyEntries); //Split
-                    count_total_words += word_tag_pair.Length;
+                    countTotalWordsTrain += word_tag_pair.Length;
 
                     for (int i = 0; i < word_tag_pair.Length; i++)
                     {
-                        //string[] word_tag_split = word_tag_pair[i].Split('/');
                         WordTags word_tag_split = SpitPair(word_tag_pair[i]);
 
-                        //add words
-                        AddWord(word_tag_split.word);
+                        AddWordInTrain(word_tag_split.word);
+
                         for (int j = 0; j < word_tag_split.tags.Count; j++)
                         {
-                            //add tags
-                            AddTag(word_tag_split.tags[j]);
+                            AddTagInTrain(word_tag_split.tags[j]);
                         }
                     }
                 }
             }
-            Console.WriteLine("Number of total pairs tag-word:" + count_total_words);
 
-            matrix = new int[word_array.Count, tag_array.Count];
+            matrix = new int[wordTrainArray.Count, tagTrainArray.Count];
+
             //Add Tag - Words in Matrix
             foreach (string file in files)
             {
                 using (StreamReader reader = new StreamReader(file))
                 {
                     string text_in_file = reader.ReadToEnd();
-
                     word_tag_pair = text_in_file.Split(separators, StringSplitOptions.RemoveEmptyEntries); //Split
 
                     for (int i = 0; i < word_tag_pair.Length; i++)
                     {
-                        //string[] word_tag_split = word_tag_pair[i].Split('/');
                         WordTags word_tag_split = SpitPair(word_tag_pair[i]);
+
                         for (int j = 0; j < word_tag_split.tags.Count; j++)
                         {
                             matrix[GetWordPosition(word_tag_split.word), GetTagPosition(word_tag_split.tags[j])]++;
@@ -89,97 +127,89 @@ namespace POS_Tagging
                 }
             }
 
-            Console.WriteLine("Noun Percentage: " + GetFrequence(noun, nameof(noun)));
-            Console.WriteLine("\n");
-            Console.WriteLine("Verb Percentage: " + GetFrequence(verb, nameof(verb)));
-            Console.WriteLine("\n");
-            Console.WriteLine("Adjective Percentage: " + GetFrequence(adjective, nameof(adjective)));
-            Console.WriteLine("\n");
-            Console.WriteLine("Article Percentage: " + GetFrequence(article, nameof(article)));
-            Console.WriteLine("\n");
-            Console.WriteLine("Adverb Percentage: " + GetFrequence(adverb, nameof(adverb)));
-            Console.WriteLine("\n");
-            Console.WriteLine("Conjuction Percentage: " + GetFrequence(conjunction, nameof(conjunction)));
-            Console.WriteLine("\n");
-            Console.WriteLine("Preposition Percentage: " + GetFrequence(preposition, nameof(preposition)));
-            Console.WriteLine("\n");
-            Console.WriteLine("Pronoun Percentage: " + GetFrequence(pronoun, nameof(pronoun)));
-            Console.WriteLine("\n");
-            Console.WriteLine("Other Percentage: " + GetFrequence(other, nameof(other)));
-
-            /*       for (int i = 0; i < tag_array.Count; i++)
-                   {
-                       if (tag_array[i] != "")
-                           Console.WriteLine(tag_array[i]); //ar trebui sa nu imi mai afiseze nimic dupa ce scap de tot ce nu am nevoie din ala de tag
-                   }*/
-
-            //afisare tags
-            /*            for (int i = 0; i < tag_array.Count; i++)
-                        {
-                            Console.WriteLine(tag_array[i]);
-                        }*/
-
-            //afisare matrice
-            /*            for (int i = 0; i < word_array.Count; i++)
-                        {
-                            for (int j = 0; j < tag_array.Count; j++)
-                            {
-                                Console.Write(matrix[i, j] + " ");
-                            }
-                            Console.Write("\n");
-                        }*/
-
-            WriteInFile();
-
+            WriteStatistics(files.Length);
+            WriteInFile(files.Length);
         }
-
-        private void WriteInFile()
+        private void AddWordInTrain(string word)
         {
-            //write to file matrix
-            using (TextWriter tw = new StreamWriter("matrix.txt"))
+            bool existsInArray = false;
+            //char[] charsToTrim = { '\'', '$', ' ', '.', '-' };
+
+            for (int j = 0; j < wordTrainArray.Count; j++)
             {
-                for (int i = 0; i < word_array.Count; i++)
+                if (wordTrainArray[j] == word)
                 {
-                    tw.Write(word_array[i] + " ");
-                }
-                tw.WriteLine("\n");
-                for (int i = 0; i < tag_array.Count; i++)
-                {
-                    tw.Write(tag_array[i] + " ");
-                }
-
-                for (int i = 0; i < word_array.Count; i++)
-                {
-                    for (int j = 0; j < tag_array.Count; j++)
-                    {
-
-                        tw.Write(matrix[i, j] + " ");
-                    }
-                    tw.WriteLine("\n");
+                    existsInArray = true;
+                    break;
                 }
             }
-        }
-
-        private string Predict(string word)
-        {
-            int wordPosition = GetWordPosition(word);
-            int maxFrequence = -1;
-            int maxFrequencePosition = 0;
-            for (int i = 0; i < tag_array.Count; i++)
+            if (!existsInArray)
+            // && !IgnoredSymbols(word))
             {
-                if (matrix[wordPosition, i] > maxFrequence)
+
+                //string word_trim = word.TrimEnd('\'');
+                //word_array[word_count] = word;
+                wordTrainArray.Add(word);
+            }
+        }
+        private void AddTagInTrain(string tag)
+        {
+            bool existsInArray = false;
+
+            for (int j = 0; j < tagTrainArray.Count; j++)
+            {
+                if (tagTrainArray[j] == tag)
                 {
-                    maxFrequence = matrix[wordPosition, i];
-                    maxFrequencePosition = i;
+                    existsInArray = true;
+                    break;
                 }
             }
-            return tag_array[maxFrequencePosition];
+
+            if (!existsInArray)
+            {
+                tagTrainArray.Add(tag);
+            }
+        }
+        private void AddWordInTest(string word)
+        {
+            bool existsInArray = false;
+
+            for (int j = 0; j < wordTestArray.Count; j++)
+            {
+                if (wordTestArray[j] == word)
+                {
+                    existsInArray = true;
+                    break;
+                }
+            }
+            if (!existsInArray)
+            {
+                wordTestArray.Add(word);
+            }
+        }
+        private void AddTagInTest(string tag)
+        {
+            bool existsInArray = false;
+
+            for (int j = 0; j < tagTestArray.Count; j++)
+            {
+                if (tagTestArray[j] == tag)
+                {
+                    existsInArray = true;
+                    break;
+                }
+            }
+
+            if (!existsInArray)
+            {
+                tagTestArray.Add(tag);
+            }
         }
         private int GetTagPosition(string tag)
         {
-            for (int i = 0; i < tag_array.Count; i++)
+            for (int i = 0; i < tagTrainArray.Count; i++)
             {
-                if (tag == tag_array[i])
+                if (tag == tagTrainArray[i])
                 {
                     return i;
                 }
@@ -188,19 +218,43 @@ namespace POS_Tagging
         }
         private int GetWordPosition(string word)
         {
-            for (int i = 0; i < word_array.Count; i++)
+            for (int i = 0; i < wordTrainArray.Count; i++)
             {
-                if (word == word_array[i])
+                if (word == wordTrainArray[i])
                 {
                     return i;
                 }
             }
             return -1;
         }
+        private string Predict(string word)
+        {
+            int wordPosition = GetWordPosition(word);
+            int maxFrequence = -1;
+            int maxFrequencePosition = 0;
+
+            for (int i = 0; i < tagTrainArray.Count; i++)
+            {
+                if (wordPosition == -1)
+                {
+                    return "unfound";
+                }
+
+                if (matrix[wordPosition, i] > maxFrequence)
+                {
+                    maxFrequence = matrix[wordPosition, i];
+                    maxFrequencePosition = i;
+                }
+            }
+
+            return tagTrainArray[maxFrequencePosition];
+        }
+        private string PredictNoun(string word)
+        {
+            return "nn";
+        }
         private static WordTags SpitPair(string word_tag_pair)
         {
-
-            //string[] word_tag_return = new string[2];
             WordTags word_tag_return = new WordTags();
             string tagGroup;
             char[] charArray = word_tag_pair.ToCharArray();
@@ -218,51 +272,11 @@ namespace POS_Tagging
             word_tag_return.word = word_tag_pair.Substring(0, i);
             Array.Reverse(tag);
             tagGroup = new string(tag).Trim('\0');
-            word_tag_return.tags = new List<string>(tagGroup.Split(new char[] { '-', '+', '*', ' ', '`', '\'', '.', ',', ':', '(', ')', '$' }, StringSplitOptions.RemoveEmptyEntries));
+            word_tag_return.tags = new List<string>
+                (tagGroup.Split(new char[] { '-', '+', '*', ' ', '`', '\'', '.', ',', ':', '(', ')', '$' },
+                StringSplitOptions.RemoveEmptyEntries));
 
             return word_tag_return;
-        }
-        private void AddWord(string word)
-        {
-            bool exists_in_array = false;
-            //char[] charsToTrim = { '\'', '$', ' ', '.', '-' };
-            for (int j = 0; j < word_count; j++)
-            {
-                if (word_array[j] == word)
-                {
-                    exists_in_array = true;
-                    break;
-                }
-            }
-            if (!exists_in_array)
-            // && !IgnoredSymbols(word))
-            {
-
-                //string word_trim = word.TrimEnd('\'');
-                //word_array[word_count] = word;
-                word_array.Add(word);
-                word_count++;
-            }
-        }
-        private void AddTag(string tag)
-        {
-            bool exists_in_array = false;
-            for (int j = 0; j < tag_count; j++)
-            {
-                if (tag_array[j] == tag)
-                {
-                    exists_in_array = true;
-                    break;
-                }
-            }
-            if (!exists_in_array)
-            // && !IgnoredSymbols(tag))
-            {
-                /*         tag_array[tag_count] = tag;*/
-                tag_array.Add(tag);
-                tag_count++;
-            }
-
         }
 
         //Functie care ia pozitia tag-ului din tag_array.
@@ -272,9 +286,9 @@ namespace POS_Tagging
 
             for (int i = 0; i < value.Length; i++)
             {
-                for (int j = 0; j < tag_array.Count; j++)
+                for (int j = 0; j < tagTrainArray.Count; j++)
                 {
-                    if (value[i] == tag_array[j])
+                    if (value[i] == tagTrainArray[j])
                     {
                         positions[i] = j;
                         //   tag_array[j] = "";
@@ -288,326 +302,157 @@ namespace POS_Tagging
         {
             int[] valuePositions = GetTagIndexes(value);
             int valueSum = 0;
-            for (int i = 0; i < word_array.Count; i++)
+
+            for (int i = 0; i < wordTrainArray.Count; i++)
             {
                 for (int j = 0; j < valuePositions.Length; j++)
                 {
                     valueSum += matrix[i, valuePositions[j]];
                 }
             }
+
             Console.WriteLine("No. Appearances {0}: {1}", partOfSpeech, valueSum);
-            Console.WriteLine("Total number of words:" + count_total_words);
-            return 1.0 * valueSum / count_total_words;
+            return 1.0 * valueSum / countTotalWordsTrain;
         }
+        private void WriteStatistics(int noOfFiles)
+        {
+            string fileName = "Statistics-" +
+               DateTime.Now.Day + "D" +
+               DateTime.Now.Month + "M" +
+               DateTime.Now.Hour + "h" +
+               DateTime.Now.Minute + "min-" +
+               noOfFiles + ".txt";
 
+            using (TextWriter tw = new StreamWriter(fileName))
+            {
+                tw.WriteLine("Number of total pairs tag-word:" + countTotalWordsTrain);
+                tw.WriteLine("Noun Percentage: " + GetFrequence(noun, nameof(noun)));
+                tw.WriteLine("Verb Percentage: " + GetFrequence(verb, nameof(verb)));
+                tw.WriteLine("Adjective Percentage: " + GetFrequence(adjective, nameof(adjective)));
+                tw.WriteLine("Article Percentage: " + GetFrequence(article, nameof(article)));
+                tw.WriteLine("Adverb Percentage: " + GetFrequence(adverb, nameof(adverb)));
+                tw.WriteLine("Conjuction Percentage: " + GetFrequence(conjunction, nameof(conjunction)));
+                tw.WriteLine("Preposition Percentage: " + GetFrequence(preposition, nameof(preposition)));
+                tw.WriteLine("Pronoun Percentage: " + GetFrequence(pronoun, nameof(pronoun)));
+                tw.WriteLine("Other Percentage: " + GetFrequence(other, nameof(other)));
+            }
+        }
+        private void WriteInFile(int noOfFiles)
+        {
+            string fileName = "Matrix-" +
+               DateTime.Now.Day + "D" +
+               DateTime.Now.Month + "M" +
+               DateTime.Now.Hour + "h" +
+               DateTime.Now.Minute + "min-" +
+               noOfFiles + ".txt";
 
-        //DE STERS
-        //NOUN - Functie care returneaza frecventa de aparitie a unei parti de vorbire.
-        private double GetNounFrequence()
-        {
-            int[] nounPositions = GetTagIndexes(noun);
-            int nounsSum = 0;
-            for (int i = 0; i < word_array.Count; i++)
+            using (TextWriter tw = new StreamWriter(fileName))
             {
-                for (int j = 0; j < nounPositions.Length; j++)
+                for (int i = 0; i < wordTrainArray.Count; i++)
                 {
-                    nounsSum += matrix[i, nounPositions[j]];
+                    tw.Write(wordTrainArray[i] + " ");
                 }
-            }
-            Console.WriteLine("No. Appearances nouns:" + nounsSum);
-            Console.WriteLine("Total number of words:" + count_total_words);
-            return 1.0 * nounsSum / count_total_words;
-        }
-        //VERB - Functie care returneaza frecventa de aparitie a unei parti de vorbire.
-        private double GetVerbFrequence()
-        {
-            int[] verbPositions = GetTagIndexes(verb);
-            int verbsSum = 0;
-            for (int i = 0; i < word_array.Count; i++)
-            {
-                for (int j = 0; j < verbPositions.Length; j++)
-                {
-                    verbsSum += matrix[i, verbPositions[j]];
-                }
-            }
-            Console.WriteLine("No. Appearances verbs:" + verbsSum);
-            return 1.0 * verbsSum / count_total_words;
-        }
-        //ADJECTIVE - Functie care returneaza frecventa de aparitie a unei parti de vorbire.
-        private double GetAdjectiveFrequence()
-        {
-            int[] adjectivePositions = GetTagIndexes(adjective);
-            int adjectivesSum = 0;
-            for (int i = 0; i < word_array.Count; i++)
-            {
-                for (int j = 0; j < adjectivePositions.Length; j++)
-                {
-                    adjectivesSum += matrix[i, adjectivePositions[j]];
-                }
-            }
-            Console.WriteLine("No. Appearances adjectives:" + adjectivesSum);
-            return 1.0 * adjectivesSum / count_total_words;
-        }
-        //ADVERB - Functie care returneaza frecventa de aparitie a unei parti de vorbire.
-        private double GetAdverbFrequence()
-        {
-            int[] adverbPositions = GetTagIndexes(adverb);
-            int adverbsSum = 0;
-            for (int i = 0; i < word_array.Count; i++)
-            {
-                for (int j = 0; j < adverbPositions.Length; j++)
-                {
-                    adverbsSum += matrix[i, adverbPositions[j]];
-                }
-            }
-            Console.WriteLine("No. Appearances adverbs:" + adverbsSum);
-            return 1.0 * adverbsSum / count_total_words;
-        }
-        //PRONOUN - Functie care returneaza frecventa de aparitie a unei parti de vorbire.
-        private double GetPronounFrequence()
-        {
-            int[] pronounPositions = GetTagIndexes(pronoun);
-            int pronounsSum = 0;
-            for (int i = 0; i < word_array.Count; i++)
-            {
-                for (int j = 0; j < pronounPositions.Length; j++)
-                {
-                    pronounsSum += matrix[i, pronounPositions[j]];
-                }
-            }
-            Console.WriteLine("No. Appearances pronouns:" + pronounsSum);
-            return 1.0 * pronounsSum / count_total_words;
-        }
-        //CONJUNCTION - Functie care returneaza frecventa de aparitie a unei parti de vorbire.
-        private double GetConjunctionFrequence()
-        {
-            int[] conjunctionPositions = GetTagIndexes(conjunction);
-            int conjunctionsSum = 0;
-            for (int i = 0; i < word_array.Count; i++)
-            {
-                for (int j = 0; j < conjunctionPositions.Length; j++)
-                {
-                    conjunctionsSum += matrix[i, conjunctionPositions[j]];
-                }
-            }
-            Console.WriteLine("No. Appearances conjunctions:" + conjunctionsSum);
-            return 1.0 * conjunctionsSum / count_total_words;
-        }
-        //ARTICLE  - Functie care returneaza frecventa de aparitie a unei parti de vorbire.
-        private double GetArticleFrequence()
-        {
-            int[] articlePositions = GetTagIndexes(article);
-            int articlesSum = 0;
-            for (int i = 0; i < word_array.Count; i++)
-            {
-                for (int j = 0; j < articlePositions.Length; j++)
-                {
-                    articlesSum += matrix[i, articlePositions[j]];
-                }
-            }
-            Console.WriteLine("No. Appearances articles:" + articlesSum);
-            return 1.0 * articlesSum / count_total_words;
-        }
-        //PREPOSITION  - Functie care returneaza frecventa de aparitie a unei parti de vorbire.
-        private double GetPrepositionFrequence()
-        {
-            int[] prepositionPositions = GetTagIndexes(preposition);
-            int prepositionsSum = 0;
-            for (int i = 0; i < word_array.Count; i++)
-            {
-                for (int j = 0; j < prepositionPositions.Length; j++)
-                {
-                    prepositionsSum += matrix[i, prepositionPositions[j]];
-                }
-            }
-            Console.WriteLine("No. Appearances prepositions:" + prepositionsSum);
-            return 1.0 * prepositionsSum / count_total_words;
-        }
-        //OTHER  - Functie care returneaza frecventa de aparitie a unei parti de vorbire.
-        private double GetOtherFrequence()
-        {
-            int[] otherPositions = GetTagIndexes(other);
-            int othersSum = 0;
-            for (int i = 0; i < word_array.Count; i++)
-            {
-                for (int j = 0; j < otherPositions.Length; j++)
-                {
-                    othersSum += matrix[i, otherPositions[j]];
-                }
-            }
-            Console.WriteLine("No. Appearances others:" + othersSum);
-            return 1.0 * othersSum / count_total_words;
-        }
-        private int[] GetNounIndexes()
-        {
-            int[] positions = new int[noun.Length];
+                tw.WriteLine();
 
-            for (int i = 0; i < noun.Length; i++)
-            {
-                for (int j = 0; j < tag_array.Count; j++)
+                for (int i = 0; i < tagTrainArray.Count; i++)
                 {
-                    if (noun[i] == tag_array[j])
+                    tw.Write(tagTrainArray[i] + " ");
+                }
+                tw.WriteLine();
+
+                for (int i = 0; i < wordTrainArray.Count; i++)
+                {
+                    for (int j = 0; j < tagTrainArray.Count; j++)
                     {
-                        positions[i] = j;
-                        break;
+
+                        tw.Write(matrix[i, j] + " ");
+                    }
+                    tw.WriteLine();
+                }
+            }
+        }
+        private void loadMatrixFile_Click(object sender, EventArgs e)
+        {
+            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            {
+                openFileDialog.InitialDirectory = @"C:\Users\iulia.severin\source\repos\POS-Tagging\bin\Debug";
+                openFileDialog.Filter = "txt files (*.txt)|*.txt|All files (*.*)|*.*";
+                openFileDialog.FilterIndex = 2;
+                openFileDialog.RestoreDirectory = true;
+
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    var fileStream = openFileDialog.OpenFile();
+
+                    using (StreamReader reader = new StreamReader(fileStream))
+                    {
+                        readWordTagArray(reader, isWord: true);
+                        readWordTagArray(reader, isWord: false);
+                        readMatrix(reader);
                     }
                 }
             }
-            return positions;
-        }
-        private int[] GetVerbIndexes()
-        {
-            int[] positions = new int[verb.Length];
 
-            for (int i = 0; i < verb.Length; i++)
+            MessageBox.Show("File loaded succesfully!");
+        }
+        private void readMatrix(StreamReader reader)
+        {
+            char[] separators = new char[] { ' ' };
+            matrix = new int[wordTrainArray.Count, tagTrainArray.Count];
+
+            for (int i = 0; i < wordTrainArray.Count; i++)
             {
-                for (int j = 0; j < tag_array.Count; j++)
+                string line = reader.ReadLine();
+                string[] lineSplit = line.Split(separators, StringSplitOptions.RemoveEmptyEntries);
+
+                for (int j = 0; j < tagTrainArray.Count; j++)
                 {
-                    if (verb[i] == tag_array[j])
+                    matrix[i, j] = Convert.ToInt32(lineSplit[j]);
+                }
+            }
+        }
+        private void readWordTagArray(StreamReader reader, bool isWord)
+        {
+            char[] separators = new char[] { ' ' };
+            string line = reader.ReadLine();
+            string[] lineSplit = line.Split(separators, StringSplitOptions.RemoveEmptyEntries);
+
+            if (isWord)
+            {
+                for (int i = 0; i < lineSplit.Length; i++)
+                {
+                    AddWordInTrain(lineSplit[i]);
+                }
+            }
+            else
+            {
+                for (int i = 0; i < lineSplit.Length; i++)
+                {
+                    AddTagInTrain(lineSplit[i]);
+                }
+            }
+        }
+        private void btnPredict_Click(object sender, EventArgs e)
+        {
+            int ctTruePositive = 0;
+            ReadBrownTest();
+            foreach (WordTags wordTag in wordTagTestArray)
+            {
+                // Console.WriteLine("{0}: {1}", word, Predict(word));
+                string predictionNoun = PredictNoun(wordTag.word);
+                Console.WriteLine("{0}: {1}", wordTag.word, PredictNoun(wordTag.word));
+                foreach (string tag in wordTag.tags)
+                {
+                    if (predictionNoun == tag)
                     {
-                        positions[i] = j;
-                        break;
+                        ctTruePositive++;
                     }
                 }
             }
-            return positions;
-        }
-        private int[] GetAdjectiveIndexes()
-        {
-            int[] positions = new int[adjective.Length];
 
-            for (int i = 0; i < adjective.Length; i++)
-            {
-                for (int j = 0; j < tag_array.Count; j++)
-                {
-                    if (adjective[i] == tag_array[j])
-                    {
-                        positions[i] = j;
-                        break;
-                    }
-                }
-            }
-            return positions;
+            MessageBox.Show("Total True Positive Nouns: " 
+                + ctTruePositive.ToString() + " din totalul de " 
+                + wordTagTestArray.Count.ToString());
         }
-        private int[] GetAdverbIndexes()
-        {
-            int[] positions = new int[adverb.Length];
-
-            for (int i = 0; i < adverb.Length; i++)
-            {
-                for (int j = 0; j < tag_array.Count; j++)
-                {
-                    if (adverb[i] == tag_array[j])
-                    {
-                        positions[i] = j;
-                        break;
-                    }
-                }
-            }
-            return positions;
-        }
-        private int[] GetPronounIndexes()
-        {
-            int[] positions = new int[pronoun.Length];
-
-            for (int i = 0; i < pronoun.Length; i++)
-            {
-                for (int j = 0; j < tag_array.Count; j++)
-                {
-                    if (pronoun[i] == tag_array[j])
-                    {
-                        positions[i] = j;
-                        break;
-                    }
-                }
-            }
-            return positions;
-        }
-        private int[] GetConjunctionIndexes()
-        {
-            int[] positions = new int[conjunction.Length];
-
-            for (int i = 0; i < conjunction.Length; i++)
-            {
-                for (int j = 0; j < tag_array.Count; j++)
-                {
-                    if (conjunction[i] == tag_array[j])
-                    {
-                        positions[i] = j;
-                        break;
-                    }
-                }
-            }
-            return positions;
-        }
-        private int[] GetArticleIndexes()
-        {
-            int[] positions = new int[article.Length];
-
-            for (int i = 0; i < article.Length; i++)
-            {
-                for (int j = 0; j < tag_array.Count; j++)
-                {
-                    if (article[i] == tag_array[j])
-                    {
-                        positions[i] = j;
-                        break;
-                    }
-                }
-            }
-            return positions;
-        }
-        private int[] GetPrepositionIndexes()
-        {
-            int[] positions = new int[preposition.Length];
-
-            for (int i = 0; i < preposition.Length; i++)
-            {
-                for (int j = 0; j < tag_array.Count; j++)
-                {
-                    if (preposition[i] == tag_array[j])
-                    {
-                        positions[i] = j;
-                        break;
-                    }
-                }
-            }
-            return positions;
-        }
-        private int[] GetOtherIndexes()
-        {
-            int[] positions = new int[other.Length];
-
-            for (int i = 0; i < other.Length; i++)
-            {
-                for (int j = 0; j < tag_array.Count; j++)
-                {
-                    if (other[i] == tag_array[j])
-                    {
-                        positions[i] = j;
-                        break;
-                    }
-                }
-            }
-            return positions;
-        }
-        //ingore symbols - filter
-        private bool IgnoredSymbols(string word)
-        {
-            string[] ignored_symbols = { "''", "'", ",", ":", ".", "(", ")", "``", "?", "!", ";", "--" };
-            int length = ignored_symbols.Length;
-
-            for (int i = 0; i < length; i++)
-            {
-                //if contains this symbol, ignore all ? pt --hl --tl
-                if (word == ignored_symbols[i])
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
-        //DE STERS PANA AICI
-
     }
 }
