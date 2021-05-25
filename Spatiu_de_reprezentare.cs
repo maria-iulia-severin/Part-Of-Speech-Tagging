@@ -18,11 +18,14 @@ namespace POS_Tagging
         string[] preposition = { "in", "to" };
         string[] other = { "uh", "abl", "abn", "abx", "ap", "cd", "dt", "dti", "dts", "dtx", "ex", "fw", "od", "ql", "qlp", "wdt", "wql", "nc", "hl", "tl" };
 
+        List<String> partsOfSpeech = new List<string> { "noun", "verb", "adjective", "adverb", "pronoun", "conjunction", "article", "preposition", "other" };
+
         List<String> wordTrainArray = new List<string>();
         List<String> tagTrainArray = new List<string>();
 
         List<String> wordTestArray = new List<string>();
         List<String> tagTestArray = new List<string>();
+
         List<WordTags> wordTagTestArray = new List<WordTags>();
 
         int[,] matrix;
@@ -61,22 +64,45 @@ namespace POS_Tagging
                     for (int i = 0; i < wordTagPair.Length; i++)
                     {
                         WordTags wordTagSplit = SpitPair(wordTagPair[i]);
-                        wordTagTestArray.Add(wordTagSplit);
 
-                        AddWordInTest(wordTagSplit.word);
+                        //wordTagTestArray.Add(wordTagSplit);
+                        AddWordTagTestArray(wordTagSplit);
 
-                        for (int j = 0; j < wordTagSplit.tags.Count; j++)
-                        {
-                            AddTagInTest(wordTagSplit.tags[j]);
-                        }
+                        /*                        AddWordInTest(wordTagSplit.word);
+
+                                                for (int j = 0; j < wordTagSplit.tags.Count; j++)
+                                                {
+                                                    AddTagInTest(wordTagSplit.tags[j]);
+                                                }*/
                     }
                 }
             }
+        }
+        //Functia aceasta ia perechea word-tag si modifica tag-ul cu cele 9 categ.
+        private void AddWordTagTestArray(WordTags wordTag)
+        {
+            WordTags finalWordTag = new WordTags();
+            finalWordTag.word = wordTag.word;
+            finalWordTag.tags = new List<string>();
+
+            foreach (string tag in wordTag.tags)
+            {
+                string getTagPoS = GetPartOfSpeech(tag);
+
+                if (!finalWordTag.tags.Contains(getTagPoS))
+                {
+                    finalWordTag.tags.Add(getTagPoS);
+                    //predictie
+                }
+            }
+
+            wordTagTestArray.Add(finalWordTag);
         }
         private void ReadCorpus()
         {
             //string rootPath = @"C:\Users\iulia.severin\source\repos\POS-Tagging\bin\Debug\Brown";
             string rootPath = @"C:\Users\iulia.severin\source\repos\POS-Tagging\bin\Debug\Brown_Train";
+            //string rootPath = @"C:\Users\iulia.severin\source\repos\POS-Tagging\bin\Debug\Brown_Test";
             var files = Directory.GetFiles(rootPath, "*.*", SearchOption.AllDirectories);
             string[] word_tag_pair;
             char[] separators = new char[] { ' ', '\r', '\n', '\t' };
@@ -128,7 +154,7 @@ namespace POS_Tagging
             }
 
             WriteStatistics(files.Length);
-            WriteInFile(files.Length);
+            WriteMatrixToFile(files.Length);
         }
         private void AddWordInTrain(string word)
         {
@@ -156,6 +182,8 @@ namespace POS_Tagging
         {
             bool existsInArray = false;
 
+            tag = GetPartOfSpeech(tag);
+
             for (int j = 0; j < tagTrainArray.Count; j++)
             {
                 if (tagTrainArray[j] == tag)
@@ -168,6 +196,45 @@ namespace POS_Tagging
             if (!existsInArray)
             {
                 tagTrainArray.Add(tag);
+            }
+        }
+        private string GetPartOfSpeech(string tag)
+        {
+            if (noun.Contains(tag))
+            {
+                return "noun";
+            }
+            else if (verb.Contains(tag))
+            {
+                return "verb";
+            }
+            else if (adjective.Contains(tag))
+            {
+                return "adjective";
+            }
+            else if (adverb.Contains(tag))
+            {
+                return "adverb";
+            }
+            else if (pronoun.Contains(tag))
+            {
+                return "pronoun";
+            }
+            else if (conjunction.Contains(tag))
+            {
+                return "conjunction";
+            }
+            else if (article.Contains(tag))
+            {
+                return "article";
+            }
+            else if (preposition.Contains(tag))
+            {
+                return "preposition";
+            }
+            else
+            {
+                return "other";
             }
         }
         private void AddWordInTest(string word)
@@ -190,6 +257,7 @@ namespace POS_Tagging
         private void AddTagInTest(string tag)
         {
             bool existsInArray = false;
+            tag = GetPartOfSpeech(tag);
 
             for (int j = 0; j < tagTestArray.Count; j++)
             {
@@ -207,6 +275,7 @@ namespace POS_Tagging
         }
         private int GetTagPosition(string tag)
         {
+            tag = GetPartOfSpeech(tag);
             for (int i = 0; i < tagTrainArray.Count; i++)
             {
                 if (tag == tagTrainArray[i])
@@ -251,7 +320,7 @@ namespace POS_Tagging
         }
         private string PredictNoun(string word)
         {
-            return "nn";
+            return "noun";
         }
         private static WordTags SpitPair(string word_tag_pair)
         {
@@ -280,17 +349,17 @@ namespace POS_Tagging
         }
 
         //Functie care ia pozitia tag-ului din tag_array.
-        private int[] GetTagIndexes(string[] value)
+        private int GetTagIndexes(string value)
         {
-            int[] positions = new int[value.Length];
+            int positions = -1;
 
             for (int i = 0; i < value.Length; i++)
             {
                 for (int j = 0; j < tagTrainArray.Count; j++)
                 {
-                    if (value[i] == tagTrainArray[j])
+                    if (value == tagTrainArray[j])
                     {
-                        positions[i] = j;
+                        positions = j;
                         //   tag_array[j] = "";
                         break;
                     }
@@ -298,20 +367,18 @@ namespace POS_Tagging
             }
             return positions;
         }
-        private double GetFrequence(string[] value, string partOfSpeech)
+        private double GetFrequence(string value)
         {
-            int[] valuePositions = GetTagIndexes(value);
+
+            int valuePositions = GetTagIndexes(value);
             int valueSum = 0;
 
             for (int i = 0; i < wordTrainArray.Count; i++)
             {
-                for (int j = 0; j < valuePositions.Length; j++)
-                {
-                    valueSum += matrix[i, valuePositions[j]];
-                }
+                valueSum += matrix[i, valuePositions];
             }
 
-            Console.WriteLine("No. Appearances {0}: {1}", partOfSpeech, valueSum);
+            Console.WriteLine("No. Appearances {0}: {1}", value, valueSum);
             return 1.0 * valueSum / countTotalWordsTrain;
         }
         private void WriteStatistics(int noOfFiles)
@@ -326,18 +393,22 @@ namespace POS_Tagging
             using (TextWriter tw = new StreamWriter(fileName))
             {
                 tw.WriteLine("Number of total pairs tag-word:" + countTotalWordsTrain);
-                tw.WriteLine("Noun Percentage: " + GetFrequence(noun, nameof(noun)));
-                tw.WriteLine("Verb Percentage: " + GetFrequence(verb, nameof(verb)));
+                for (int i = 0; i < partsOfSpeech.Count; i++)
+                {
+                    tw.WriteLine("{0} Percentage: {1}", partsOfSpeech[i], GetFrequence(partsOfSpeech[i]));
+                }
+
+                /*tw.WriteLine("Verb Percentage: " + GetFrequence(verb, nameof(verb)));
                 tw.WriteLine("Adjective Percentage: " + GetFrequence(adjective, nameof(adjective)));
                 tw.WriteLine("Article Percentage: " + GetFrequence(article, nameof(article)));
                 tw.WriteLine("Adverb Percentage: " + GetFrequence(adverb, nameof(adverb)));
                 tw.WriteLine("Conjuction Percentage: " + GetFrequence(conjunction, nameof(conjunction)));
                 tw.WriteLine("Preposition Percentage: " + GetFrequence(preposition, nameof(preposition)));
                 tw.WriteLine("Pronoun Percentage: " + GetFrequence(pronoun, nameof(pronoun)));
-                tw.WriteLine("Other Percentage: " + GetFrequence(other, nameof(other)));
+                tw.WriteLine("Other Percentage: " + GetFrequence(other, nameof(other)));*/
             }
         }
-        private void WriteInFile(int noOfFiles)
+        private void WriteMatrixToFile(int noOfFiles)
         {
             string fileName = "Matrix-" +
                DateTime.Now.Day + "D" +
@@ -434,25 +505,56 @@ namespace POS_Tagging
         }
         private void btnPredict_Click(object sender, EventArgs e)
         {
-            int ctTruePositive = 0;
+            int[] contorTP = new int[partsOfSpeech.Count];
+            int[] contorTN = new int[partsOfSpeech.Count];
+            int[] contorFP = new int[partsOfSpeech.Count];
+            int[] contorFN = new int[partsOfSpeech.Count];
+
+            // int ctwordTag = 0;
             ReadBrownTest();
             foreach (WordTags wordTag in wordTagTestArray)
             {
                 // Console.WriteLine("{0}: {1}", word, Predict(word));
-                string predictionNoun = PredictNoun(wordTag.word);
+                string predictedTag = PredictNoun(wordTag.word);
                 Console.WriteLine("{0}: {1}", wordTag.word, PredictNoun(wordTag.word));
-                foreach (string tag in wordTag.tags)
+
+                foreach (string realTag in wordTag.tags)
                 {
-                    if (predictionNoun == tag)
+                    if(predictedTag == realTag)
                     {
-                        ctTruePositive++;
+                        contorTP[partsOfSpeech.IndexOf(realTag)]++;
+                        //foreach part of Speach ++ TN 
                     }
+                    else
+                    {
+                        contorFN[partsOfSpeech.IndexOf(predictedTag)]++;
+                        contorFP[partsOfSpeech.IndexOf(realTag)]++;
+                    }
+
+                    //if ((predictionNoun == "noun") & (predictionNoun == tag))
+                    //{
+                    //    contorTP++;
+                    //}
+                    //if ((predictionNoun != "noun") & (predictionNoun != tag))
+                    //{
+                    //    contorTN++;
+                    //}
+                    //if ((predictionNoun == "noun") & (predictionNoun != tag))
+                    //{
+                    //    contorFP++;
+                    //}
+                    //if ((predictionNoun != "noun") & (predictionNoun == tag))
+                    //{
+                    //    contorFN++;
+                    //}
                 }
             }
 
-            MessageBox.Show("Total True Positive Nouns: " 
-                + ctTruePositive.ToString() + " din totalul de " 
-                + wordTagTestArray.Count.ToString());
+            MessageBox.Show("Total True Positive Nouns: " + contorTP.ToString() + "\n"
+                            + "Total False Negative Nouns: " + contorFN.ToString() + "\n"
+                            + "Total False Positive Nouns: " + contorFP.ToString() + "\n"
+                            + "Total True Negative Nouns: " + contorTN.ToString());
+
         }
     }
 }
