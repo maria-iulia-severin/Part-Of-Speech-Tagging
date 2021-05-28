@@ -27,7 +27,10 @@ namespace POS_Tagging
         List<String> tagTestArray = new List<string>();
 
         List<WordTags> wordTagTestArray = new List<WordTags>();
-
+        int[] contorTP = new int[9];
+        int[] contorTN = new int[9];
+        int[] contorFP = new int[9];
+        int[] contorFN = new int[9];
         int[,] matrix;
         // int wordCount = 0; // de sters
         //int tagCount = 0; // de sters
@@ -50,7 +53,7 @@ namespace POS_Tagging
             var files = Directory.GetFiles(rootPath, "*.*", SearchOption.AllDirectories);
             string[] wordTagPair;
             char[] separators = new char[] { ' ', '\r', '\n', '\t' };
-
+            int ct = 0;
             //Add pair Word-Tags in array
             foreach (string file in files)
             {
@@ -64,7 +67,7 @@ namespace POS_Tagging
                     for (int i = 0; i < wordTagPair.Length; i++)
                     {
                         WordTags wordTagSplit = SpitPair(wordTagPair[i]);
-
+                        ct++;
                         //wordTagTestArray.Add(wordTagSplit);
                         AddWordTagTestArray(wordTagSplit);
 
@@ -75,10 +78,16 @@ namespace POS_Tagging
                                                     AddTagInTest(wordTagSplit.tags[j]);
                                                 }*/
                     }
+
                 }
+
             }
+
+
+            Console.WriteLine(ct);
         }
-        //Functia aceasta ia perechea word-tag si modifica tag-ul cu cele 9 categ.
+
+        //Functia aceasta ia perechea word-tag si modifica tag-ul cu cele 9 categ apoi le adauga .Word si .Tag[i]
         private void AddWordTagTestArray(WordTags wordTag)
         {
             WordTags finalWordTag = new WordTags();
@@ -87,13 +96,19 @@ namespace POS_Tagging
 
             foreach (string tag in wordTag.tags)
             {
-                string getTagPoS = GetPartOfSpeech(tag);
+                string realTag = GetPartOfSpeech(tag);
 
-                if (!finalWordTag.tags.Contains(getTagPoS))
+                if (!finalWordTag.tags.Contains(realTag))
                 {
-                    finalWordTag.tags.Add(getTagPoS);
-                    //predictie
+                    finalWordTag.tags.Add(realTag);
+
                 }
+            }
+
+            //cuvinte fara tag - ex punct virgula
+            if (finalWordTag.tags.Count == 0)
+            {
+                return;
             }
 
             wordTagTestArray.Add(finalWordTag);
@@ -181,8 +196,26 @@ namespace POS_Tagging
         private void AddTagInTrain(string tag)
         {
             bool existsInArray = false;
-
             tag = GetPartOfSpeech(tag);
+
+            for (int j = 0; j < tagTrainArray.Count; j++)
+            {
+                if (tagTrainArray[j] == tag)
+                {
+                    existsInArray = true;
+                    break;
+                }
+            }
+
+            if (!existsInArray)
+            {
+                tagTrainArray.Add(tag);
+            }
+        }
+        //la Load, deja tag-urile sunt schimbate si trebuia sa evit un pas din functia de mai sus
+        private void AddTagInTrainLoad(string tag)
+        {
+            bool existsInArray = false;
 
             for (int j = 0; j < tagTrainArray.Count; j++)
             {
@@ -397,15 +430,31 @@ namespace POS_Tagging
                 {
                     tw.WriteLine("{0} Percentage: {1}", partsOfSpeech[i], GetFrequence(partsOfSpeech[i]));
                 }
+            }
+        }
+        private void WritePredictionStatistics()
+        {
+           // string fileName = "Noun-Prediction-Statistics" +
+            string fileName = "Frequence-Prediction-Statistics" +
+               DateTime.Now.Day + "D" +
+               DateTime.Now.Month + "M" +
+               DateTime.Now.Hour + "h" +
+               DateTime.Now.Minute + "min-" +
+               150 + ".txt";
 
-                /*tw.WriteLine("Verb Percentage: " + GetFrequence(verb, nameof(verb)));
-                tw.WriteLine("Adjective Percentage: " + GetFrequence(adjective, nameof(adjective)));
-                tw.WriteLine("Article Percentage: " + GetFrequence(article, nameof(article)));
-                tw.WriteLine("Adverb Percentage: " + GetFrequence(adverb, nameof(adverb)));
-                tw.WriteLine("Conjuction Percentage: " + GetFrequence(conjunction, nameof(conjunction)));
-                tw.WriteLine("Preposition Percentage: " + GetFrequence(preposition, nameof(preposition)));
-                tw.WriteLine("Pronoun Percentage: " + GetFrequence(pronoun, nameof(pronoun)));
-                tw.WriteLine("Other Percentage: " + GetFrequence(other, nameof(other)));*/
+            using (TextWriter tw = new StreamWriter(fileName))
+            {
+                for (int i = 0; i < partsOfSpeech.Count; i++)
+                {
+                    double accuracy = ((contorTP[i] + contorFN[i] + contorFP[i] + contorTN[i]) == 0) ? 0 : 1.0 * (contorTP[i] + contorTN[i]) / (contorTP[i] + contorFN[i] + contorFP[i] + contorTN[i]);
+                    double precision = ((contorTP[i] + contorFP[i]) == 0) ? 0 : 1.0 * contorTP[i] / (contorTP[i] + contorFP[i]);
+                    double recall = ((contorTP[i] + contorFN[i]) == 0) ? 0 : 1.0 * contorTP[i] / (contorTP[i] + contorFN[i]);
+
+                    tw.WriteLine("Accuracy {0}, {1} ", partsOfSpeech[i], accuracy.ToString());
+                    tw.WriteLine("Precision {0}: {1} ", partsOfSpeech[i], precision.ToString());
+                    tw.WriteLine("Recall {0}: {1} ", partsOfSpeech[i], recall.ToString());
+                    tw.WriteLine();
+                }
             }
         }
         private void WriteMatrixToFile(int noOfFiles)
@@ -442,30 +491,6 @@ namespace POS_Tagging
                 }
             }
         }
-        private void loadMatrixFile_Click(object sender, EventArgs e)
-        {
-            using (OpenFileDialog openFileDialog = new OpenFileDialog())
-            {
-                openFileDialog.InitialDirectory = @"C:\Users\iulia.severin\source\repos\POS-Tagging\bin\Debug";
-                openFileDialog.Filter = "txt files (*.txt)|*.txt|All files (*.*)|*.*";
-                openFileDialog.FilterIndex = 2;
-                openFileDialog.RestoreDirectory = true;
-
-                if (openFileDialog.ShowDialog() == DialogResult.OK)
-                {
-                    var fileStream = openFileDialog.OpenFile();
-
-                    using (StreamReader reader = new StreamReader(fileStream))
-                    {
-                        readWordTagArray(reader, isWord: true);
-                        readWordTagArray(reader, isWord: false);
-                        readMatrix(reader);
-                    }
-                }
-            }
-
-            MessageBox.Show("File loaded succesfully!");
-        }
         private void readMatrix(StreamReader reader)
         {
             char[] separators = new char[] { ' ' };
@@ -499,62 +524,87 @@ namespace POS_Tagging
             {
                 for (int i = 0; i < lineSplit.Length; i++)
                 {
-                    AddTagInTrain(lineSplit[i]);
+                    AddTagInTrainLoad(lineSplit[i]);
                 }
             }
         }
-        private void btnPredict_Click(object sender, EventArgs e)
+        private void loadMatrixFile_Click(object sender, EventArgs e)
         {
-            int[] contorTP = new int[partsOfSpeech.Count];
-            int[] contorTN = new int[partsOfSpeech.Count];
-            int[] contorFP = new int[partsOfSpeech.Count];
-            int[] contorFN = new int[partsOfSpeech.Count];
-
-            // int ctwordTag = 0;
-            ReadBrownTest();
-            foreach (WordTags wordTag in wordTagTestArray)
+            using (OpenFileDialog openFileDialog = new OpenFileDialog())
             {
-                // Console.WriteLine("{0}: {1}", word, Predict(word));
-                string predictedTag = PredictNoun(wordTag.word);
-                Console.WriteLine("{0}: {1}", wordTag.word, PredictNoun(wordTag.word));
+                openFileDialog.InitialDirectory = @"C:\Users\iulia.severin\source\repos\POS-Tagging\bin\Debug";
+                openFileDialog.Filter = "txt files (*.txt)|*.txt|All files (*.*)|*.*";
+                openFileDialog.FilterIndex = 2;
+                openFileDialog.RestoreDirectory = true;
 
-                foreach (string realTag in wordTag.tags)
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
                 {
-                    if(predictedTag == realTag)
-                    {
-                        contorTP[partsOfSpeech.IndexOf(realTag)]++;
-                        //foreach part of Speach ++ TN 
-                    }
-                    else
-                    {
-                        contorFN[partsOfSpeech.IndexOf(predictedTag)]++;
-                        contorFP[partsOfSpeech.IndexOf(realTag)]++;
-                    }
+                    var fileStream = openFileDialog.OpenFile();
 
-                    //if ((predictionNoun == "noun") & (predictionNoun == tag))
-                    //{
-                    //    contorTP++;
-                    //}
-                    //if ((predictionNoun != "noun") & (predictionNoun != tag))
-                    //{
-                    //    contorTN++;
-                    //}
-                    //if ((predictionNoun == "noun") & (predictionNoun != tag))
-                    //{
-                    //    contorFP++;
-                    //}
-                    //if ((predictionNoun != "noun") & (predictionNoun == tag))
-                    //{
-                    //    contorFN++;
-                    //}
+                    using (StreamReader reader = new StreamReader(fileStream))
+                    {
+                        readWordTagArray(reader, isWord: true);
+                        readWordTagArray(reader, isWord: false);
+                        readMatrix(reader);
+                    }
                 }
             }
 
-            MessageBox.Show("Total True Positive Nouns: " + contorTP.ToString() + "\n"
-                            + "Total False Negative Nouns: " + contorFN.ToString() + "\n"
-                            + "Total False Positive Nouns: " + contorFP.ToString() + "\n"
-                            + "Total True Negative Nouns: " + contorTN.ToString());
+            MessageBox.Show("File loaded succesfully!");
+        }
+        private void btnPredict_Click(object sender, EventArgs e)
+        {
+            ReadBrownTest();
+
+            foreach (WordTags wordTag in wordTagTestArray)
+            {
+                //string predictedTag = PredictNoun(wordTag.word);
+                string predictedTag = Predict(wordTag.word);
+                Console.WriteLine("{0}: {1}", wordTag.word, predictedTag);
+
+                for (int i = 0; i < partsOfSpeech.Count; i++)
+                {
+                    bool isWordPredicted = wordTag.tags.Contains(predictedTag);
+                    bool isPartOfSpeechPredicted = predictedTag == partsOfSpeech[i];
+
+                    if (!isWordPredicted && isPartOfSpeechPredicted)
+                    {
+                        contorFP[i]++;
+                    }
+                    //else if (!isWordPredicted && !isPartOfSpeechPredicted)
+                    else if (isWordPredicted && !isPartOfSpeechPredicted)
+                    {
+                        contorFN[i]++;
+                    }
+                    else if (isWordPredicted && isPartOfSpeechPredicted)
+                    {
+                        contorTP[i]++;
+                    }
+                    //else if (isWordPredicted && !isPartOfSpeechPredicted)
+                    else if (!isWordPredicted && !isPartOfSpeechPredicted)
+                    {
+                        contorTN[i]++;
+                    }
+                }
+                //true positive - contor de câte ori zice că e bine, și e bine
+                //true negative - contor de câte ori zice că nu e, și într-adevăr nu e
+                //false positive - contor de câte ori zice că e bine, dar nu e bine
+                //fals negative -contor de câte ori zice că nu e bine, dar era bine
+            }
+
+            for (int i = 0; i < partsOfSpeech.Count; i++)
+            {
+                Console.WriteLine("Total True Positive {0}: {1} ", partsOfSpeech[i], contorTP[i].ToString());
+                Console.WriteLine("Total False Negative {0}: {1} ", partsOfSpeech[i], contorFN[i].ToString());
+                Console.WriteLine("Total False Positive {0}: {1} ", partsOfSpeech[i], contorFP[i].ToString());
+                Console.WriteLine("Total True Negative {0}: {1} ", partsOfSpeech[i], contorTN[i].ToString());
+                Console.WriteLine("SUMA {0}: {1} ", partsOfSpeech[i], (contorTN[i] + contorTP[i] + contorFN[i] + contorFP[i]).ToString());
+            }
+            Console.WriteLine(wordTagTestArray.Count);
+            WritePredictionStatistics();
 
         }
     }
 }
+
+
