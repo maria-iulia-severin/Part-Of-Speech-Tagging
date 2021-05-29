@@ -434,7 +434,7 @@ namespace POS_Tagging
         }
         private void WritePredictionStatistics()
         {
-           // string fileName = "Noun-Prediction-Statistics" +
+            //string fileName = "Noun-Prediction-Statistics" +
             string fileName = "Frequence-Prediction-Statistics" +
                DateTime.Now.Day + "D" +
                DateTime.Now.Month + "M" +
@@ -567,24 +567,51 @@ namespace POS_Tagging
                     bool isWordPredicted = wordTag.tags.Contains(predictedTag);
                     bool isPartOfSpeechPredicted = predictedTag == partsOfSpeech[i];
 
-                    if (!isWordPredicted && isPartOfSpeechPredicted)
+                    if (wordTag.tags.Contains(partsOfSpeech[i]))
                     {
-                        contorFP[i]++;
+                        if (predictedTag.Equals(partsOfSpeech[i]))
+                        {
+                            contorTP[i]++;
+                        }
+                        else
+                        {
+                            contorFN[i]++;
+                        }
                     }
-                    //else if (!isWordPredicted && !isPartOfSpeechPredicted)
+                    else
+                    {
+                        if(predictedTag.Equals(partsOfSpeech[i]))
+                        {
+                            contorFP[i]++;
+                        }
+                        else
+                        {
+                            contorTN[i]++;
+                        }
+                    }
+
+
+
+           /*         if (isWordPredicted && isPartOfSpeechPredicted)
+                    {
+                        contorTP[i]++;
+                    }
                     else if (isWordPredicted && !isPartOfSpeechPredicted)
                     {
                         contorFN[i]++;
                     }
-                    else if (isWordPredicted && isPartOfSpeechPredicted)
+                    else if (!isWordPredicted && isPartOfSpeechPredicted)
                     {
-                        contorTP[i]++;
+                        contorFP[i]++;
                     }
+                    //else if (!isWordPredicted && !isPartOfSpeechPredicted)
+
+
                     //else if (isWordPredicted && !isPartOfSpeechPredicted)
                     else if (!isWordPredicted && !isPartOfSpeechPredicted)
                     {
                         contorTN[i]++;
-                    }
+                    }*/
                 }
                 //true positive - contor de câte ori zice că e bine, și e bine
                 //true negative - contor de câte ori zice că nu e, și într-adevăr nu e
@@ -592,13 +619,15 @@ namespace POS_Tagging
                 //fals negative -contor de câte ori zice că nu e bine, dar era bine
             }
 
-            for (int i = 0; i < partsOfSpeech.Count; i++)
+                for (int i = 0; i < partsOfSpeech.Count; i++)
             {
+                
                 Console.WriteLine("Total True Positive {0}: {1} ", partsOfSpeech[i], contorTP[i].ToString());
                 Console.WriteLine("Total False Negative {0}: {1} ", partsOfSpeech[i], contorFN[i].ToString());
                 Console.WriteLine("Total False Positive {0}: {1} ", partsOfSpeech[i], contorFP[i].ToString());
                 Console.WriteLine("Total True Negative {0}: {1} ", partsOfSpeech[i], contorTN[i].ToString());
                 Console.WriteLine("SUMA {0}: {1} ", partsOfSpeech[i], (contorTN[i] + contorTP[i] + contorFN[i] + contorFP[i]).ToString());
+            
             }
             Console.WriteLine(wordTagTestArray.Count);
             WritePredictionStatistics();
