@@ -130,11 +130,17 @@ namespace POS_Tagging
                     string text_in_file = reader.ReadToEnd();
 
                     word_tag_pair = text_in_file.Split(separators, StringSplitOptions.RemoveEmptyEntries); //Split
-                    countTotalWordsTrain += word_tag_pair.Length;
+                    
 
                     for (int i = 0; i < word_tag_pair.Length; i++)
                     {
                         WordTags word_tag_split = SpitPair(word_tag_pair[i]);
+
+                        //Decomenteaza cand generezi statistici pentru Brown_Test
+                        //if (word_tag_split.tags.Count == 0)
+                        //{
+                        //    continue;
+                        //}
 
                         AddWordInTrain(word_tag_split.word);
 
@@ -142,6 +148,7 @@ namespace POS_Tagging
                         {
                             AddTagInTrain(word_tag_split.tags[j]);
                         }
+                        countTotalWordsTrain++;
                     }
                 }
             }
@@ -159,6 +166,13 @@ namespace POS_Tagging
                     for (int i = 0; i < word_tag_pair.Length; i++)
                     {
                         WordTags word_tag_split = SpitPair(word_tag_pair[i]);
+
+                        //Decomenteaza cand generezi statistici pentru Brown_Test
+                        //if (word_tag_split.tags.Count == 0)
+                        //{
+                        //    //Console.WriteLine(word_tag_split.word + " " + word_tag_pair[i]);
+                        //    continue;
+                        //}
 
                         for (int j = 0; j < word_tag_split.tags.Count; j++)
                         {
@@ -432,7 +446,7 @@ namespace POS_Tagging
                 }
             }
         }
-        private void WritePredictionStatistics()
+        private void WritePredictionStatistics(int sumAll)
         {
             //string fileName = "Noun-Prediction-Statistics" +
             string fileName = "Frequence-Prediction-Statistics" +
@@ -442,6 +456,13 @@ namespace POS_Tagging
                DateTime.Now.Minute + "min-" +
                150 + ".txt";
 
+            double maAccuracy = 0;
+            double maPrecision = 0;
+            double maRecall = 0;
+            double maFMeasure = 0;
+            int sumTP = 0;
+           
+
             using (TextWriter tw = new StreamWriter(fileName))
             {
                 for (int i = 0; i < partsOfSpeech.Count; i++)
@@ -449,12 +470,26 @@ namespace POS_Tagging
                     double accuracy = ((contorTP[i] + contorFN[i] + contorFP[i] + contorTN[i]) == 0) ? 0 : 1.0 * (contorTP[i] + contorTN[i]) / (contorTP[i] + contorFN[i] + contorFP[i] + contorTN[i]);
                     double precision = ((contorTP[i] + contorFP[i]) == 0) ? 0 : 1.0 * contorTP[i] / (contorTP[i] + contorFP[i]);
                     double recall = ((contorTP[i] + contorFN[i]) == 0) ? 0 : 1.0 * contorTP[i] / (contorTP[i] + contorFN[i]);
+                    double fMeasure = ((precision + recall) == 0) ? 0 : 2 * (precision * recall / (precision + recall));
+                    maAccuracy =+ accuracy;
+                    maPrecision =+ precision;
+                    maRecall =+ recall;
+                    maFMeasure =+ fMeasure;
+                    sumTP =+ contorTP[i];
+                    sumAll = contorTN[i] + contorTP[i] + contorFN[i] + contorFP[i];
 
                     tw.WriteLine("Accuracy {0}, {1} ", partsOfSpeech[i], accuracy.ToString());
                     tw.WriteLine("Precision {0}: {1} ", partsOfSpeech[i], precision.ToString());
                     tw.WriteLine("Recall {0}: {1} ", partsOfSpeech[i], recall.ToString());
+                    tw.WriteLine("F-Measure {0}: {1} ", partsOfSpeech[i], fMeasure.ToString());
                     tw.WriteLine();
                 }
+
+                tw.WriteLine("Media Aritmetica Accuracy: " + (1.0 * maAccuracy / 9).ToString());
+                tw.WriteLine("Media Aritmetica Precision: " + (1.0 * maPrecision / 9).ToString());
+                tw.WriteLine("Media Aritmetica Recall: " + (1.0 * maRecall / 9).ToString());
+                tw.WriteLine("Media Aritmetica F-Measure: " + (1.0 * maFMeasure / 9).ToString());
+                tw.WriteLine("Accuracy 2: " + (1.0 * sumTP / sumAll).ToString());
             }
         }
         private void WriteMatrixToFile(int noOfFiles)
@@ -564,9 +599,6 @@ namespace POS_Tagging
 
                 for (int i = 0; i < partsOfSpeech.Count; i++)
                 {
-                    bool isWordPredicted = wordTag.tags.Contains(predictedTag);
-                    bool isPartOfSpeechPredicted = predictedTag == partsOfSpeech[i];
-
                     if (wordTag.tags.Contains(partsOfSpeech[i]))
                     {
                         if (predictedTag.Equals(partsOfSpeech[i]))
@@ -580,7 +612,7 @@ namespace POS_Tagging
                     }
                     else
                     {
-                        if(predictedTag.Equals(partsOfSpeech[i]))
+                        if (predictedTag.Equals(partsOfSpeech[i]))
                         {
                             contorFP[i]++;
                         }
@@ -589,49 +621,20 @@ namespace POS_Tagging
                             contorTN[i]++;
                         }
                     }
-
-
-
-           /*         if (isWordPredicted && isPartOfSpeechPredicted)
-                    {
-                        contorTP[i]++;
-                    }
-                    else if (isWordPredicted && !isPartOfSpeechPredicted)
-                    {
-                        contorFN[i]++;
-                    }
-                    else if (!isWordPredicted && isPartOfSpeechPredicted)
-                    {
-                        contorFP[i]++;
-                    }
-                    //else if (!isWordPredicted && !isPartOfSpeechPredicted)
-
-
-                    //else if (isWordPredicted && !isPartOfSpeechPredicted)
-                    else if (!isWordPredicted && !isPartOfSpeechPredicted)
-                    {
-                        contorTN[i]++;
-                    }*/
                 }
-                //true positive - contor de câte ori zice că e bine, și e bine
-                //true negative - contor de câte ori zice că nu e, și într-adevăr nu e
-                //false positive - contor de câte ori zice că e bine, dar nu e bine
-                //fals negative -contor de câte ori zice că nu e bine, dar era bine
             }
 
-                for (int i = 0; i < partsOfSpeech.Count; i++)
+            for (int i = 0; i < partsOfSpeech.Count; i++)
             {
-                
                 Console.WriteLine("Total True Positive {0}: {1} ", partsOfSpeech[i], contorTP[i].ToString());
                 Console.WriteLine("Total False Negative {0}: {1} ", partsOfSpeech[i], contorFN[i].ToString());
                 Console.WriteLine("Total False Positive {0}: {1} ", partsOfSpeech[i], contorFP[i].ToString());
                 Console.WriteLine("Total True Negative {0}: {1} ", partsOfSpeech[i], contorTN[i].ToString());
                 Console.WriteLine("SUMA {0}: {1} ", partsOfSpeech[i], (contorTN[i] + contorTP[i] + contorFN[i] + contorFP[i]).ToString());
-            
             }
-            Console.WriteLine(wordTagTestArray.Count);
-            WritePredictionStatistics();
 
+            Console.WriteLine(wordTagTestArray.Count);
+            WritePredictionStatistics(wordTagTestArray.Count);
         }
     }
 }
