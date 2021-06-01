@@ -343,26 +343,28 @@ namespace POS_Tagging
             }
             return -1;
         }
+        int ctunfound = 0;
         private string Predict(string word)
         {
             int wordPosition = GetWordPosition(word);
             int maxFrequence = -1;
             int maxFrequencePosition = 0;
 
+            if (wordPosition == -1)
+            {
+                ctunfound++;
+                return "noun";
+            }
+
             for (int i = 0; i < tagTrainArray.Count; i++)
             {
-                if (wordPosition == -1)
-                {
-                    return "unfound";
-                }
-
                 if (matrix[wordPosition, i] > maxFrequence)
                 {
                     maxFrequence = matrix[wordPosition, i];
                     maxFrequencePosition = i;
                 }
             }
-
+         
             return tagTrainArray[maxFrequencePosition];
         }
         private string PredictNoun(string word)
@@ -448,8 +450,8 @@ namespace POS_Tagging
         }
         private void WritePredictionStatistics(int sumAll)
         {
-            //string fileName = "Noun-Prediction-Statistics" +
-            string fileName = "Frequence-Prediction-Statistics" +
+            string fileName = "Noun-Prediction-Statistics" +
+            //string fileName = "Frequence-Prediction-Statistics" +
                DateTime.Now.Day + "D" +
                DateTime.Now.Month + "M" +
                DateTime.Now.Hour + "h" +
@@ -471,11 +473,11 @@ namespace POS_Tagging
                     double precision = ((contorTP[i] + contorFP[i]) == 0) ? 0 : 1.0 * contorTP[i] / (contorTP[i] + contorFP[i]);
                     double recall = ((contorTP[i] + contorFN[i]) == 0) ? 0 : 1.0 * contorTP[i] / (contorTP[i] + contorFN[i]);
                     double fMeasure = ((precision + recall) == 0) ? 0 : 2 * (precision * recall / (precision + recall));
-                    maAccuracy =+ accuracy;
-                    maPrecision =+ precision;
-                    maRecall =+ recall;
-                    maFMeasure =+ fMeasure;
-                    sumTP =+ contorTP[i];
+                    maAccuracy += accuracy;
+                    maPrecision += precision;
+                    maRecall += recall;
+                    maFMeasure += fMeasure;
+                    sumTP += contorTP[i];
                     sumAll = contorTN[i] + contorTP[i] + contorFN[i] + contorFP[i];
 
                     tw.WriteLine("Accuracy {0}, {1} ", partsOfSpeech[i], accuracy.ToString());
@@ -485,10 +487,10 @@ namespace POS_Tagging
                     tw.WriteLine();
                 }
 
-                tw.WriteLine("Media Aritmetica Accuracy: " + (1.0 * maAccuracy / 9).ToString());
-                tw.WriteLine("Media Aritmetica Precision: " + (1.0 * maPrecision / 9).ToString());
-                tw.WriteLine("Media Aritmetica Recall: " + (1.0 * maRecall / 9).ToString());
-                tw.WriteLine("Media Aritmetica F-Measure: " + (1.0 * maFMeasure / 9).ToString());
+                tw.WriteLine("Media Aritmetica Accuracy: " + (1.0 * maAccuracy / partsOfSpeech.Count).ToString());
+                tw.WriteLine("Media Aritmetica Precision: " + (1.0 * maPrecision / partsOfSpeech.Count).ToString());
+                tw.WriteLine("Media Aritmetica Recall: " + (1.0 * maRecall / partsOfSpeech.Count).ToString());
+                tw.WriteLine("Media Aritmetica F-Measure: " + (1.0 * maFMeasure / partsOfSpeech.Count).ToString());
                 tw.WriteLine("Accuracy 2: " + (1.0 * sumTP / sumAll).ToString());
             }
         }
@@ -593,8 +595,8 @@ namespace POS_Tagging
 
             foreach (WordTags wordTag in wordTagTestArray)
             {
-                //string predictedTag = PredictNoun(wordTag.word);
-                string predictedTag = Predict(wordTag.word);
+                string predictedTag = PredictNoun(wordTag.word);
+                //string predictedTag = Predict(wordTag.word);
                 Console.WriteLine("{0}: {1}", wordTag.word, predictedTag);
 
                 for (int i = 0; i < partsOfSpeech.Count; i++)
@@ -635,6 +637,7 @@ namespace POS_Tagging
 
             Console.WriteLine(wordTagTestArray.Count);
             WritePredictionStatistics(wordTagTestArray.Count);
+            Console.WriteLine("Contor unfound: " + ctunfound);
         }
     }
 }
