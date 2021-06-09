@@ -32,28 +32,27 @@ namespace POS_Tagging
         int[] contorFP = new int[9];
         int[] contorFN = new int[9];
         int[,] matrix;
-        // int wordCount = 0; // de sters
-        //int tagCount = 0; // de sters
-        int countTotalWordsTrain = 0;
-        int countTotalWordsTest = 0;
 
+        int countTotalWordsTrain = 0;
+        int countTotalNumberOfTagsInTrain = 0; // numar total etichetari pt a dat 1 pe linie
+
+        char[] separators = new char[] { ' ', '\r', '\n', '\t' };
+        char[] spaceSeparator = new char[] { ' ' };
         public Spatiu_de_reprezentare()
         {
             InitializeComponent();
-            //ReadCorpus();
-            //Console.WriteLine("Prediction:" + Predict("me"));
         }
         private void btnReadCorpus_Click(object sender, EventArgs e)
         {
             ReadCorpus();
         }
+
         private void ReadBrownTest()
         {
             string rootPath = @"C:\Users\iulia.severin\source\repos\POS-Tagging\bin\Debug\Brown_Test";
             var files = Directory.GetFiles(rootPath, "*.*", SearchOption.AllDirectories);
             string[] wordTagPair;
-            char[] separators = new char[] { ' ', '\r', '\n', '\t' };
-            int ct = 0;
+
             //Add pair Word-Tags in array
             foreach (string file in files)
             {
@@ -62,56 +61,110 @@ namespace POS_Tagging
                     string textInFile = reader.ReadToEnd();
 
                     wordTagPair = textInFile.Split(separators, StringSplitOptions.RemoveEmptyEntries);
-                    countTotalWordsTest += wordTagPair.Length;
 
                     for (int i = 0; i < wordTagPair.Length; i++)
                     {
-                        WordTags wordTagSplit = SpitPair(wordTagPair[i]);
-                        ct++;
-                        //wordTagTestArray.Add(wordTagSplit);
+                        WordTags wordTagSplit = SplitPair(wordTagPair[i]);
+
+                        //categ pe cele 9 tag uri
+                        for (int j = 0; j < wordTagSplit.tags.Count; j++)
+                        {
+                            wordTagSplit.tags[j] = GetPartOfSpeech(wordTagSplit.tags[j]);
+                        }
+
+                        if (wordTagSplit.tags.Count == 0)
+                        {
+                            continue;
+                        }
+
+                        //remove duplicates tags
+                        wordTagSplit.tags = wordTagSplit.tags.Distinct().ToList();
+
+                        RemoveOtherTag(wordTagSplit);
+
                         AddWordTagTestArray(wordTagSplit);
-
-                        /*                        AddWordInTest(wordTagSplit.word);
-
-                                                for (int j = 0; j < wordTagSplit.tags.Count; j++)
-                                                {
-                                                    AddTagInTest(wordTagSplit.tags[j]);
-                                                }*/
                     }
 
                 }
 
             }
+            //verificare
+            foreach (WordTags value in wordTagTestArray)
+            {
+                if (value.word.Contains("\'"))
+                {
+                    foreach (string tag in value.tags)
+                        Console.WriteLine("Cuv care nu a fost despartit " + value.word + " " + tag);
+                }
+
+                /*     if (value.tags.Count == 2 && !value.tags.Contains("other"))
+                     {
+                         foreach (string tag in value.tags)
+                         { Console.WriteLine("Exactly 2 tags: " + value.word + " " + tag); }
+                     }*/
 
 
-            Console.WriteLine(ct);
+                /*if (value.tags.Count == 1 && value.tags.First() == "other")
+                {
+                    //foreach (string tag in value.tags)
+                    Console.WriteLine("With other taag: "+value.word + " " + value.tags.First());
+                }*/
+            }
         }
 
         //Functia aceasta ia perechea word-tag si modifica tag-ul cu cele 9 categ apoi le adauga .Word si .Tag[i]
         private void AddWordTagTestArray(WordTags wordTag)
         {
+
             WordTags finalWordTag = new WordTags();
+            WordTags firstWordTag = new WordTags();
+            WordTags secondWordTag = new WordTags();
+
             finalWordTag.word = wordTag.word;
-            finalWordTag.tags = new List<string>();
+            finalWordTag.tags = wordTag.tags;
 
-            foreach (string tag in wordTag.tags)
+            string[] newWord;
+            firstWordTag.tags = new List<string>();
+            secondWordTag.tags = new List<string>();
+
+            //  countTags = wordTag.tags.Count;
+
+            /*        foreach (string tag in wordTag.tags)
+                    {
+                        string realTag = GetPartOfSpeech(tag);
+
+                        if (!finalWordTag.tags.Contains(realTag))
+                        {
+                            finalWordTag.tags.Add(realTag);
+
+                        }
+                    }*/
+
+            if (wordTag.tags.Count >= 2)
             {
-                string realTag = GetPartOfSpeech(tag);
+                newWord = finalWordTag.word.Split('\'');
 
-                if (!finalWordTag.tags.Contains(realTag))
+                if (newWord.Length == 2)
                 {
-                    finalWordTag.tags.Add(realTag);
+                    //primul cuvant
+                    firstWordTag.word = newWord[0];
+                    firstWordTag.tags.Add(wordTag.tags[0]);
+                    wordTagTestArray.Add(firstWordTag);
 
+                    //al doilea cuvant
+                    secondWordTag.word = newWord[1];
+                    secondWordTag.tags.Add(wordTag.tags[1]);
+                    wordTagTestArray.Add(secondWordTag);
+                }
+                else
+                {
+                    //lookit
                 }
             }
-
-            //cuvinte fara tag - ex punct virgula
-            if (finalWordTag.tags.Count == 0)
+            else
             {
-                return;
+                wordTagTestArray.Add(finalWordTag);
             }
-
-            wordTagTestArray.Add(finalWordTag);
         }
         private void ReadCorpus()
         {
@@ -120,7 +173,6 @@ namespace POS_Tagging
             //string rootPath = @"C:\Users\iulia.severin\source\repos\POS-Tagging\bin\Debug\Brown_Test";
             var files = Directory.GetFiles(rootPath, "*.*", SearchOption.AllDirectories);
             string[] word_tag_pair;
-            char[] separators = new char[] { ' ', '\r', '\n', '\t' };
 
             //Add pair Word-Tags in array
             foreach (string file in files)
@@ -130,28 +182,48 @@ namespace POS_Tagging
                     string text_in_file = reader.ReadToEnd();
 
                     word_tag_pair = text_in_file.Split(separators, StringSplitOptions.RemoveEmptyEntries); //Split
-                    
 
+                    // conto += word_tag_pair.Count();
                     for (int i = 0; i < word_tag_pair.Length; i++)
                     {
-                        WordTags word_tag_split = SpitPair(word_tag_pair[i]);
+                        WordTags word_tag_split = SplitPair(word_tag_pair[i]);
 
-                        //Decomenteaza cand generezi statistici pentru Brown_Test
-                        //if (word_tag_split.tags.Count == 0)
-                        //{
-                        //    continue;
-                        //}
-
-                        AddWordInTrain(word_tag_split.word);
-
+                        //categ pe cele 9 tag uri
                         for (int j = 0; j < word_tag_split.tags.Count; j++)
                         {
-                            AddTagInTrain(word_tag_split.tags[j]);
+                            word_tag_split.tags[j] = GetPartOfSpeech(word_tag_split.tags[j]);
                         }
-                        countTotalWordsTrain++;
+
+                        if (word_tag_split.tags.Count == 0)
+                        {
+                            continue;
+                        }
+
+                        //RemoveDuplicateTags(word_tag_split);
+                        word_tag_split.tags = word_tag_split.tags.Distinct().ToList();
+
+                        //Sterge tag din lista de string-uri 
+                        RemoveOtherTag(word_tag_split);
+
+                        if (word_tag_split.tags.Count == 1)
+                        {
+                            AddWordInTrain(word_tag_split.word);
+                            AddTagInTrain(word_tag_split.tags[0]);
+                            /*             for (int j = 0; j < word_tag_split.tags.Count; j++)
+                                         {
+                                             AddTagInTrain(word_tag_split.tags[j]);
+
+                                         }*/
+                            countTotalWordsTrain++;
+                        }
+                        else
+                        {
+                            SplitDoubleTaggedWords(word_tag_split);
+                        }
                     }
                 }
             }
+
 
             matrix = new int[wordTrainArray.Count, tagTrainArray.Count];
 
@@ -165,19 +237,50 @@ namespace POS_Tagging
 
                     for (int i = 0; i < word_tag_pair.Length; i++)
                     {
-                        WordTags word_tag_split = SpitPair(word_tag_pair[i]);
-
-                        //Decomenteaza cand generezi statistici pentru Brown_Test
-                        //if (word_tag_split.tags.Count == 0)
-                        //{
-                        //    //Console.WriteLine(word_tag_split.word + " " + word_tag_pair[i]);
-                        //    continue;
-                        //}
-
+                        WordTags word_tag_split = SplitPair(word_tag_pair[i]);
                         for (int j = 0; j < word_tag_split.tags.Count; j++)
                         {
-                            matrix[GetWordPosition(word_tag_split.word), GetTagPosition(word_tag_split.tags[j])]++;
+                            word_tag_split.tags[j] = GetPartOfSpeech(word_tag_split.tags[j]);
                         }
+
+                        //simboluri
+                        if (word_tag_split.tags.Count == 0)
+                        {
+                            continue;
+                        }
+
+                        //RemoveDuplicateTags(word_tag_split);
+
+                        word_tag_split.tags = word_tag_split.tags.Distinct().ToList();
+
+                        //Sterge tag din lista de string-uri
+                        RemoveOtherTag(word_tag_split);
+
+                        if (word_tag_split.tags.Count == 1)
+                        {
+                            matrix[GetWordPosition(word_tag_split.word), GetTagPosition(word_tag_split.tags[0])]++;
+                            countTotalNumberOfTagsInTrain++;
+                        }
+                        else
+                        {
+                            string[] newWord = word_tag_split.word.Split('\'');
+
+                            if (newWord.Length == 2)
+                            {
+                                //primul cuvant
+                                matrix[GetWordPosition(newWord[0]), GetTagPosition(word_tag_split.tags[0])]++;
+                                countTotalNumberOfTagsInTrain++;
+
+                                //al doilea cuvant
+                                matrix[GetWordPosition(newWord[1]), GetTagPosition(word_tag_split.tags[1])]++;
+                                countTotalNumberOfTagsInTrain++;
+                            }
+                            else
+                            {
+                                //lookit
+                            }
+                        }
+
                     }
                 }
             }
@@ -185,10 +288,47 @@ namespace POS_Tagging
             WriteStatistics(files.Length);
             WriteMatrixToFile(files.Length);
         }
+
+        private void SplitDoubleTaggedWords(WordTags word_tag_split)
+        {
+            string[] newWord = word_tag_split.word.Split('\'');
+
+            if (newWord.Length == 2)
+            {
+                //primul cuvant
+                AddWordInTrain(newWord[0]);
+                AddTagInTrain(word_tag_split.tags[0]);
+                countTotalWordsTrain++;
+
+                //al doilea cuvant
+                AddWordInTrain(newWord[1]);
+                AddTagInTrain(word_tag_split.tags[1]);
+                countTotalWordsTrain++;
+            }
+            else
+            {
+                //lookit
+            }
+        }
+
+        private void RemoveOtherTag(WordTags word_tag_split)
+        {
+            if (word_tag_split.tags.Count >= 2)
+            {
+                for (int j = 0; j < word_tag_split.tags.Count; j++)
+                {
+                    if (word_tag_split.tags[j] == "other")
+                    //other.Contains(word_tag_split.tags[j]))
+                    {
+                        word_tag_split.tags.Remove(word_tag_split.tags[j]);
+                        j--;
+                    }
+                }
+            }
+        }
         private void AddWordInTrain(string word)
         {
             bool existsInArray = false;
-            //char[] charsToTrim = { '\'', '$', ' ', '.', '-' };
 
             for (int j = 0; j < wordTrainArray.Count; j++)
             {
@@ -199,35 +339,11 @@ namespace POS_Tagging
                 }
             }
             if (!existsInArray)
-            // && !IgnoredSymbols(word))
             {
-
-                //string word_trim = word.TrimEnd('\'');
-                //word_array[word_count] = word;
                 wordTrainArray.Add(word);
             }
         }
         private void AddTagInTrain(string tag)
-        {
-            bool existsInArray = false;
-            tag = GetPartOfSpeech(tag);
-
-            for (int j = 0; j < tagTrainArray.Count; j++)
-            {
-                if (tagTrainArray[j] == tag)
-                {
-                    existsInArray = true;
-                    break;
-                }
-            }
-
-            if (!existsInArray)
-            {
-                tagTrainArray.Add(tag);
-            }
-        }
-        //la Load, deja tag-urile sunt schimbate si trebuia sa evit un pas din functia de mai sus
-        private void AddTagInTrainLoad(string tag)
         {
             bool existsInArray = false;
 
@@ -284,54 +400,7 @@ namespace POS_Tagging
                 return "other";
             }
         }
-        private void AddWordInTest(string word)
-        {
-            bool existsInArray = false;
 
-            for (int j = 0; j < wordTestArray.Count; j++)
-            {
-                if (wordTestArray[j] == word)
-                {
-                    existsInArray = true;
-                    break;
-                }
-            }
-            if (!existsInArray)
-            {
-                wordTestArray.Add(word);
-            }
-        }
-        private void AddTagInTest(string tag)
-        {
-            bool existsInArray = false;
-            tag = GetPartOfSpeech(tag);
-
-            for (int j = 0; j < tagTestArray.Count; j++)
-            {
-                if (tagTestArray[j] == tag)
-                {
-                    existsInArray = true;
-                    break;
-                }
-            }
-
-            if (!existsInArray)
-            {
-                tagTestArray.Add(tag);
-            }
-        }
-        private int GetTagPosition(string tag)
-        {
-            tag = GetPartOfSpeech(tag);
-            for (int i = 0; i < tagTrainArray.Count; i++)
-            {
-                if (tag == tagTrainArray[i])
-                {
-                    return i;
-                }
-            }
-            return -1;
-        }
         private int GetWordPosition(string word)
         {
             for (int i = 0; i < wordTrainArray.Count; i++)
@@ -364,14 +433,14 @@ namespace POS_Tagging
                     maxFrequencePosition = i;
                 }
             }
-         
+
             return tagTrainArray[maxFrequencePosition];
         }
         private string PredictNoun(string word)
         {
             return "noun";
         }
-        private static WordTags SpitPair(string word_tag_pair)
+        private static WordTags SplitPair(string word_tag_pair)
         {
             WordTags word_tag_return = new WordTags();
             string tagGroup;
@@ -396,42 +465,38 @@ namespace POS_Tagging
 
             return word_tag_return;
         }
-
-        //Functie care ia pozitia tag-ului din tag_array.
-        private int GetTagIndexes(string value)
+        private int GetTagPosition(string tag)
         {
-            int positions = -1;
-
-            for (int i = 0; i < value.Length; i++)
+            for (int i = 0; i < tagTrainArray.Count; i++)
             {
-                for (int j = 0; j < tagTrainArray.Count; j++)
+                if (tag == tagTrainArray[i])
                 {
-                    if (value == tagTrainArray[j])
-                    {
-                        positions = j;
-                        //   tag_array[j] = "";
-                        break;
-                    }
+                    return i;
                 }
             }
-            return positions;
+            return -1;
         }
         private double GetFrequence(string value)
         {
 
-            int valuePositions = GetTagIndexes(value);
+            int valuePositions = GetTagPosition(value);
             int valueSum = 0;
 
             for (int i = 0; i < wordTrainArray.Count; i++)
             {
                 valueSum += matrix[i, valuePositions];
+
             }
 
             Console.WriteLine("No. Appearances {0}: {1}", value, valueSum);
-            return 1.0 * valueSum / countTotalWordsTrain;
+            return 1.0 * valueSum / countTotalNumberOfTagsInTrain;
+            //return 1.0 * valueSum / countTotalWordsTrain;
         }
+
         private void WriteStatistics(int noOfFiles)
         {
+            double sumFrequence = 0;
+
             string fileName = "Statistics-" +
                DateTime.Now.Day + "D" +
                DateTime.Now.Month + "M" +
@@ -442,16 +507,20 @@ namespace POS_Tagging
             using (TextWriter tw = new StreamWriter(fileName))
             {
                 tw.WriteLine("Number of total pairs tag-word:" + countTotalWordsTrain);
+                tw.WriteLine("Number of total tags used for frq:" + countTotalNumberOfTagsInTrain);
                 for (int i = 0; i < partsOfSpeech.Count; i++)
                 {
                     tw.WriteLine("{0} Percentage: {1}", partsOfSpeech[i], GetFrequence(partsOfSpeech[i]));
+                    sumFrequence += GetFrequence(partsOfSpeech[i]);
+
                 }
+                tw.WriteLine("Suma Frecvente: {0}", sumFrequence);
             }
         }
         private void WritePredictionStatistics(int sumAll)
         {
-            string fileName = "Noun-Prediction-Statistics" +
-            //string fileName = "Frequence-Prediction-Statistics" +
+            //string fileName = "Noun-Prediction-Statistics" +
+            string fileName = "Frequence-Prediction-Statistics" +
                DateTime.Now.Day + "D" +
                DateTime.Now.Month + "M" +
                DateTime.Now.Hour + "h" +
@@ -463,7 +532,7 @@ namespace POS_Tagging
             double maRecall = 0;
             double maFMeasure = 0;
             int sumTP = 0;
-           
+
 
             using (TextWriter tw = new StreamWriter(fileName))
             {
@@ -530,13 +599,13 @@ namespace POS_Tagging
         }
         private void readMatrix(StreamReader reader)
         {
-            char[] separators = new char[] { ' ' };
+
             matrix = new int[wordTrainArray.Count, tagTrainArray.Count];
 
             for (int i = 0; i < wordTrainArray.Count; i++)
             {
                 string line = reader.ReadLine();
-                string[] lineSplit = line.Split(separators, StringSplitOptions.RemoveEmptyEntries);
+                string[] lineSplit = line.Split(spaceSeparator, StringSplitOptions.RemoveEmptyEntries);
 
                 for (int j = 0; j < tagTrainArray.Count; j++)
                 {
@@ -546,9 +615,8 @@ namespace POS_Tagging
         }
         private void readWordTagArray(StreamReader reader, bool isWord)
         {
-            char[] separators = new char[] { ' ' };
             string line = reader.ReadLine();
-            string[] lineSplit = line.Split(separators, StringSplitOptions.RemoveEmptyEntries);
+            string[] lineSplit = line.Split(spaceSeparator, StringSplitOptions.RemoveEmptyEntries);
 
             if (isWord)
             {
@@ -561,7 +629,7 @@ namespace POS_Tagging
             {
                 for (int i = 0; i < lineSplit.Length; i++)
                 {
-                    AddTagInTrainLoad(lineSplit[i]);
+                    AddTagInTrain(lineSplit[i]);
                 }
             }
         }
@@ -595,8 +663,8 @@ namespace POS_Tagging
 
             foreach (WordTags wordTag in wordTagTestArray)
             {
-                string predictedTag = PredictNoun(wordTag.word);
-                //string predictedTag = Predict(wordTag.word);
+                //string predictedTag = PredictNoun(wordTag.word);
+                string predictedTag = Predict(wordTag.word);
                 Console.WriteLine("{0}: {1}", wordTag.word, predictedTag);
 
                 for (int i = 0; i < partsOfSpeech.Count; i++)
@@ -635,9 +703,10 @@ namespace POS_Tagging
                 Console.WriteLine("SUMA {0}: {1} ", partsOfSpeech[i], (contorTN[i] + contorTP[i] + contorFN[i] + contorFP[i]).ToString());
             }
 
-            Console.WriteLine(wordTagTestArray.Count);
+            Console.WriteLine("Count wordTagTestArray " + wordTagTestArray.Count);
             WritePredictionStatistics(wordTagTestArray.Count);
-            Console.WriteLine("Contor unfound: " + ctunfound);
+
+
         }
     }
 }
