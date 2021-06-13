@@ -376,6 +376,7 @@ namespace POS_Tagging
                 //lookit
                 AddWordInTrain(word_tag_split.word);
                 AddTagInTrain(word_tag_split.tags[0]);
+                countTotalWordsTrain++;
             }
         }
         private void RemoveOtherTag(WordTags word_tag_split)
@@ -854,9 +855,8 @@ namespace POS_Tagging
                         readWordTagArray(reader, isWord: true);
                         readWordTagArray(reader, isWord: false);
                         readMatrix(reader);
-                        string test = reader.ReadLine();
-                        string test1 = reader.ReadLine();
-                       // string test2 = reader.ReadLine();
+                        reader.ReadLine();
+                        reader.ReadLine();
                         readInitialState(reader);
                         reader.ReadLine();
                         reader.ReadLine();
