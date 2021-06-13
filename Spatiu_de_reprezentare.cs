@@ -336,13 +336,13 @@ namespace POS_Tagging
                 }
             }
 
-
-            for (int i = 0; i < partsOfSpeech.Count; i++)
+            //aici era part of sp
+            for (int i = 0; i < tagTrainArray.Count; i++)
             {
-                initialState[i] = GetFrequence(partsOfSpeech[i]);
+                initialState[i] = GetFrequence(tagTrainArray[i]);
             }
 
-            transitionIntegerTempMatrix = new int[partsOfSpeech.Count, partsOfSpeech.Count];
+            transitionIntegerTempMatrix = new int[tagTrainArray.Count, tagTrainArray.Count];
             //de schimbat nume variabila
             for (int i = 0; i < wordTagTestArray.Count - 1; i++)
             {
@@ -564,13 +564,12 @@ namespace POS_Tagging
             int valueSum = 0;
             double lineSum = 0;
          
-
-            for (int i = 0; i < partsOfSpeech.Count; i++)
+            for (int i = 0; i < tagTrainArray.Count; i++)
             {
                 valueSum += transitionIntegerTempMatrix[valuePositions, i];
             }
             //article dupa article 5,5 nu da ok ?? sum 69749
-            for (int i = 0; i < partsOfSpeech.Count; i++)
+            for (int i = 0; i < tagTrainArray.Count; i++)
             {
                 transitionMatrix[valuePositions, i] = 1.0 * transitionIntegerTempMatrix[valuePositions, i] / valueSum;
                 lineSum += transitionMatrix[valuePositions, i];
@@ -603,8 +602,8 @@ namespace POS_Tagging
         private void WriteStatistics(int noOfFiles)
         {
             double sumFrequence = 0;
-            transitionMatrix = new double[partsOfSpeech.Count, partsOfSpeech.Count];
-            emissionMatrix = new double[wordTrainArray.Count, partsOfSpeech.Count];
+            transitionMatrix = new double[tagTrainArray.Count, tagTrainArray.Count];
+            emissionMatrix = new double[wordTrainArray.Count, tagTrainArray.Count];
 
             string fileName = "Statistics-" +
                DateTime.Now.Day + "D" +
@@ -617,33 +616,33 @@ namespace POS_Tagging
             {
                 tw.WriteLine("Number of total pairs tag-word:" + countTotalWordsTrain);
                 tw.WriteLine("Number of total tags used for frq:" + countTotalNumberOfTagsInTrain);
-                for (int i = 0; i < partsOfSpeech.Count; i++)
+                for (int i = 0; i < tagTrainArray.Count; i++)
                 {
-                    tw.WriteLine("{0} Percentage: {1}", partsOfSpeech[i], GetFrequence(partsOfSpeech[i]));
-                    sumFrequence += GetFrequence(partsOfSpeech[i]);
+                    tw.WriteLine("{0} Percentage: {1}", tagTrainArray[i], GetFrequence(tagTrainArray[i]));
+                    sumFrequence += GetFrequence(tagTrainArray[i]);
 
                 }
                 tw.WriteLine("Suma Frecvente: {0}", sumFrequence);
                 tw.WriteLine();
 
                 tw.WriteLine("Verificare suma pe fiecare linie - Matrice Tranzitie:");
-                for (int i = 0; i < partsOfSpeech.Count; i++)
+                for (int i = 0; i < tagTrainArray.Count; i++)
                 {
-                    tw.WriteLine("{0} Suma pe rand: {1}", partsOfSpeech[i], GetMatrixFrequence(partsOfSpeech[i]));
+                    tw.WriteLine("{0} Suma pe rand: {1}", tagTrainArray[i], GetMatrixFrequence(tagTrainArray[i]));
                 }
                 tw.WriteLine();
 
                 tw.WriteLine("Verificare suma pe fiecare linie/ coloana in cazul meu - Matrice Probabilitati?:");
-                for (int i = 0; i < partsOfSpeech.Count; i++)
+                for (int i = 0; i < tagTrainArray.Count; i++)
                 {
-                    tw.WriteLine("{0} Suma pe coloana: {1}", partsOfSpeech[i], GetMatrix2Frequence(partsOfSpeech[i]));
+                    tw.WriteLine("{0} Suma pe coloana: {1}", tagTrainArray[i], GetMatrix2Frequence(tagTrainArray[i]));
                 }
             }
         }
         private void WritePredictionStatistics(int sumAll)
         {
-            //string fileName = "Noun-Prediction-Statistics" +
-            string fileName = "Frequence-Prediction-Statistics" +
+            string fileName = "Noun-Prediction-Statistics" +
+            //string fileName = "Frequence-Prediction-Statistics" +
                DateTime.Now.Day + "D" +
                DateTime.Now.Month + "M" +
                DateTime.Now.Hour + "h" +
@@ -699,9 +698,6 @@ namespace POS_Tagging
             {
                 for (int i = 0; i < wordTrainArray.Count; i++)
                 {
-                    if(wordTrainArray[i] == "")
-                    { 
-                    }
                     tw.Write(wordTrainArray[i] + " ");
                 }
                 tw.WriteLine();
@@ -724,7 +720,7 @@ namespace POS_Tagging
                 tw.WriteLine();
 
                 tw.WriteLine("Initial State");
-                for (int i = 0; i < partsOfSpeech.Count; i++)
+                for (int i = 0; i < tagTrainArray.Count; i++)
                 {
                     tw.Write(initialState[i] + " ");
                 }
@@ -732,11 +728,10 @@ namespace POS_Tagging
                 tw.WriteLine();
 
                 tw.WriteLine("Matricea de Transitie");
-                for (int i = 0; i < partsOfSpeech.Count; i++)
+                for (int i = 0; i < tagTrainArray.Count; i++)
                 {
-                    for (int j = 0; j < partsOfSpeech.Count; j++)
+                    for (int j = 0; j < tagTrainArray.Count; j++)
                     {
-                        //tw.Write(transitionIntegerTempMatrix[i, j] + " ");
                         tw.Write(transitionMatrix[i, j] + " ");
                     }
                     tw.WriteLine();
@@ -747,7 +742,7 @@ namespace POS_Tagging
                 tw.WriteLine("Matricea de Emisie");
                 for (int i = 0; i < wordTrainArray.Count; i++)
                 {
-                    for (int j = 0; j < partsOfSpeech.Count; j++)
+                    for (int j = 0; j < tagTrainArray.Count; j++)
                     {
                         tw.Write(emissionMatrix[i, j] + " ");
                     }
@@ -758,7 +753,6 @@ namespace POS_Tagging
         }
         private void readMatrix(StreamReader reader)
         {
-
             emissionIntegerTempMatrix = new int[wordTrainArray.Count, tagTrainArray.Count];
 
             for (int i = 0; i < wordTrainArray.Count; i++)
@@ -807,36 +801,34 @@ namespace POS_Tagging
         private void readTransitionMatrix(StreamReader reader)
         {
 
-            transitionMatrix = new double[partsOfSpeech.Count, partsOfSpeech.Count];
+            transitionMatrix = new double[tagTrainArray.Count, tagTrainArray.Count];
 
-            for (int i = 0; i < partsOfSpeech.Count; i++)
+            for (int i = 0; i < tagTrainArray.Count; i++)
             {
                 string line = reader.ReadLine();
                 string[] lineSplit = line.Split(spaceSeparator, StringSplitOptions.RemoveEmptyEntries);
 
-                for (int j = 0; j < partsOfSpeech.Count; j++)
+                for (int j = 0; j < tagTrainArray.Count; j++)
                 {
                     transitionMatrix[i, j] = Convert.ToDouble(lineSplit[j]);
                 }
             }
         }
-        //to double nu to int
         private void readEmissionMatrix(StreamReader reader)
         {
-            emissionMatrix = new double[wordTrainArray.Count, partsOfSpeech.Count];
+            emissionMatrix = new double[wordTrainArray.Count, tagTrainArray.Count];
 
             for (int i = 0; i < wordTrainArray.Count; i++)
             {
                 string line = reader.ReadLine();
                 string[] lineSplit = line.Split(spaceSeparator, StringSplitOptions.RemoveEmptyEntries);
 
-                for (int j = 0; j < partsOfSpeech.Count; j++)
+                for (int j = 0; j < tagTrainArray.Count; j++)
                 {
                     emissionMatrix[i, j] = Convert.ToDouble(lineSplit[j]);
                 }
             }
         }
-
         private void loadMatrixFile_Click(object sender, EventArgs e)
         {
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
@@ -871,7 +863,7 @@ namespace POS_Tagging
             MessageBox.Show("File loaded succesfully!");
 
 
-            for (int i = 0; i < partsOfSpeech.Count; i++)
+            for (int i = 0; i < tagTrainArray.Count; i++)
             {
 
                 Console.WriteLine(initialState[i] + " ");
@@ -879,9 +871,9 @@ namespace POS_Tagging
 
             Console.WriteLine();
             Console.WriteLine("Matricea de Transitie");
-            for (int i = 0; i < partsOfSpeech.Count; i++)
+            for (int i = 0; i < tagTrainArray.Count; i++)
             {
-                for (int j = 0; j < partsOfSpeech.Count; j++)
+                for (int j = 0; j < tagTrainArray.Count; j++)
                 {
                     Console.Write(transitionMatrix[i, j] + " ");
                 }
@@ -892,7 +884,7 @@ namespace POS_Tagging
             Console.WriteLine("Matricea de eimisie");
             for (int i = 0; i < wordTrainArray.Count; i++)
             {
-                for (int j = 0; j < partsOfSpeech.Count; j++)
+                for (int j = 0; j < tagTrainArray.Count; j++)
                 {
                     Console.Write(emissionMatrix[i, j] + " ");
                 }
@@ -905,8 +897,8 @@ namespace POS_Tagging
 
             foreach (WordTags wordTag in wordTagTestArray)
             {
-                //string predictedTag = PredictNoun(wordTag.word);
-                string predictedTag = Predict(wordTag.word);
+                string predictedTag = PredictNoun(wordTag.word);
+               // string predictedTag = Predict(wordTag.word);
                 Console.WriteLine("{0}: {1}", wordTag.word, predictedTag);
 
                 for (int i = 0; i < partsOfSpeech.Count; i++)
