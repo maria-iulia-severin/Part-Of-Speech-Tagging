@@ -18,7 +18,7 @@ namespace POS_Tagging
         string[] preposition = { "in", "to" };
         string[] other = { "uh", "abl", "abn", "abx", "ap", "cd", "dt", "dti", "dts", "dtx", "ex", "fw", "od", "ql", "qlp", "wdt", "wql", "nc", "hl", "tl" };
 
-        List<String> partsOfSpeech = new List<string> { "noun", "verb", "adjective", "adverb", "pronoun", "conjunction", "article", "preposition", "other" };
+        List<String> partsOfSpeech = new List<string> { "noun", "conjunction", "other", "verb", "preposition", "article", "adjective", "pronoun", "adverb" };
 
         List<String> wordTrainArray = new List<string>();
         List<String> tagTrainArray = new List<string>();
@@ -47,13 +47,84 @@ namespace POS_Tagging
             ReadCorpus();
         }
         double[] initialState = new double[9];
-        private void ReadBrownTestViterbi()
+        double[] currentProbability = new double[9];
+        double[] pastProbability = new double[9];
+        double[] transitions = new double[9];
+
+        string[] testViterbi = { "Mitchell", "wants", "the", "apple" };
+        //Mitchell/np said/vbd the/at closeness/nn
+        private string HiddenMarkovModel(string word, int position)
         {
+            int pos;
+            int word0;
+            int wordn;
+            if (position == 0)
+            {
+                for (int i = 0; i < partsOfSpeech.Count; i++)
+                {
+                    pos = GetTagPosition(partsOfSpeech[i]);
+                    word0 = GetWordPosition(word);
+                    currentProbability[i] = ViterbiS0(word0, pos);
+                }
+                MoveCurentToLast();
+                Console.WriteLine(word + " " + GetPosFromCurrentProbability(currentProbability.Max()));
+                return GetPosFromCurrentProbability(currentProbability.Max());
+            }
+            else
+            {
+                wordn = GetWordPosition(word);
+                for (int j = 0; j < partsOfSpeech.Count; j++)
+                {
+                    pos = GetTagPosition(partsOfSpeech[j]);
+                    currentProbability[j] = ViterbiSn(wordn, pos);
+                }
+                MoveCurentToLast();
+                Console.WriteLine(word + " " + GetPosFromCurrentProbability(currentProbability.Max()));
+                return GetPosFromCurrentProbability(currentProbability.Max());
+            }
+        }
+        //daca nu gasste cuv ce return?
 
-            //momentan functioneaza doar daca dau pe read corpus si apoi predictie
+        private string GetPosFromCurrentProbability(double probability)
+        {
+            for (int i = 0; i < partsOfSpeech.Count; i++)
+            {
+                if (currentProbability[i] == probability)
+                {
+                    return tagTrainArray[i];
+                }
+            }
+            return "unfound";
+        }
+        private double ViterbiS0(int word, int posCurrent)
+        {
+            //currentProbability[pos] 
+            //ce fac cand nu am cuvantul ?
+            return emissionMatrix[word, posCurrent] * initialState[posCurrent];
+        }
+        private double ViterbiSn(int word, int posCurrent)
+        {
+            int posPast;
 
+            foreach (string pos2 in partsOfSpeech)
+            {
+                posPast = GetTagPosition(pos2);
+                transitions[posPast] = emissionMatrix[word, posCurrent] * transitionMatrix[posPast, posCurrent];     
+            }
 
-
+            double[] tempProbbility = new double[9];
+            for (int i = 0; i < partsOfSpeech.Count; i++)
+            {
+                tempProbbility[i] = pastProbability[i] * transitions[i];
+            }
+            return tempProbbility.Max(); //numa sa nu mai am eroare
+        }
+        private void MoveCurentToLast()
+        {
+            for (int i = 0; i < partsOfSpeech.Count; i++)
+            {
+                pastProbability[i] = currentProbability[i];
+            }
         }
         private void ReadBrownTest()
         {
@@ -409,7 +480,7 @@ namespace POS_Tagging
             {
                 wordTrainArray.Add(word);
             }
-            
+
         }
         private void AddTagInTrain(string tag)
         {
@@ -468,7 +539,6 @@ namespace POS_Tagging
                 return "other";
             }
         }
-
         private int GetWordPosition(string word)
         {
             for (int i = 0; i < wordTrainArray.Count; i++)
@@ -557,13 +627,12 @@ namespace POS_Tagging
             return 1.0 * valueSum / countTotalNumberOfTagsInTrain;
             //return 1.0 * valueSum / countTotalWordsTrain;
         }
-        
         private double GetMatrixFrequence(string value)
         {
             int valuePositions = GetTagPosition(value);
             int valueSum = 0;
             double lineSum = 0;
-         
+
             for (int i = 0; i < tagTrainArray.Count; i++)
             {
                 valueSum += transitionIntegerTempMatrix[valuePositions, i];
@@ -589,10 +658,10 @@ namespace POS_Tagging
             {
                 valueSum += emissionIntegerTempMatrix[i, valuePositions];
             }
-            
+
             for (int i = 0; i < wordTrainArray.Count; i++)
             {
-                emissionMatrix[i, valuePositions] = 1.0 * emissionIntegerTempMatrix[i, valuePositions] / valueSum;
+                emissionMatrix[i, valuePositions] = (1.0 * emissionIntegerTempMatrix[i, valuePositions] / valueSum);
                 columnSum += emissionMatrix[i, valuePositions];
             }
             Console.WriteLine("Suma coloana Emission Matrix {0}: {1}", value, valueSum);
@@ -893,53 +962,57 @@ namespace POS_Tagging
         }
         private void btnPredict_Click(object sender, EventArgs e)
         {
-            ReadBrownTest();
-
-            foreach (WordTags wordTag in wordTagTestArray)
+            for (int i = 0; i < testViterbi.Count(); i++)
             {
-                string predictedTag = PredictNoun(wordTag.word);
-               // string predictedTag = Predict(wordTag.word);
-                Console.WriteLine("{0}: {1}", wordTag.word, predictedTag);
-
-                for (int i = 0; i < partsOfSpeech.Count; i++)
-                {
-                    if (wordTag.tags.Contains(partsOfSpeech[i]))
-                    {
-                        if (predictedTag.Equals(partsOfSpeech[i]))
-                        {
-                            contorTP[i]++;
-                        }
-                        else
-                        {
-                            contorFN[i]++;
-                        }
-                    }
-                    else
-                    {
-                        if (predictedTag.Equals(partsOfSpeech[i]))
-                        {
-                            contorFP[i]++;
-                        }
-                        else
-                        {
-                            contorTN[i]++;
-                        }
-                    }
-                }
+                HiddenMarkovModel(testViterbi[i], i);
             }
+            /*            ReadBrownTest();
 
-            for (int i = 0; i < partsOfSpeech.Count; i++)
-            {
-                Console.WriteLine("Total True Positive {0}: {1} ", partsOfSpeech[i], contorTP[i].ToString());
-                Console.WriteLine("Total False Negative {0}: {1} ", partsOfSpeech[i], contorFN[i].ToString());
-                Console.WriteLine("Total False Positive {0}: {1} ", partsOfSpeech[i], contorFP[i].ToString());
-                Console.WriteLine("Total True Negative {0}: {1} ", partsOfSpeech[i], contorTN[i].ToString());
-                Console.WriteLine("SUMA {0}: {1} ", partsOfSpeech[i], (contorTN[i] + contorTP[i] + contorFN[i] + contorFP[i]).ToString());
-            }
+                        foreach (WordTags wordTag in wordTagTestArray)// for .... wordTag[i].word
+                        {
+                            string predictedTag = PredictNoun(wordTag.word);
+                            // string predictedTag = Predict(wordTag.word);
+                            Console.WriteLine("{0}: {1}", wordTag.word, predictedTag);
 
-            Console.WriteLine("Count wordTagTestArray " + wordTagTestArray.Count);
-            WritePredictionStatistics(wordTagTestArray.Count);
+                            for (int i = 0; i < partsOfSpeech.Count; i++)
+                            {
+                                if (wordTag.tags.Contains(partsOfSpeech[i]))
+                                {
+                                    if (predictedTag.Equals(partsOfSpeech[i]))
+                                    {
+                                        contorTP[i]++;
+                                    }
+                                    else
+                                    {
+                                        contorFN[i]++;
+                                    }
+                                }
+                                else
+                                {
+                                    if (predictedTag.Equals(partsOfSpeech[i]))
+                                    {
+                                        contorFP[i]++;
+                                    }
+                                    else
+                                    {
+                                        contorTN[i]++;
+                                    }
+                                }
+                            }
+                        }
 
+                        for (int i = 0; i < partsOfSpeech.Count; i++)
+                        {
+                            Console.WriteLine("Total True Positive {0}: {1} ", partsOfSpeech[i], contorTP[i].ToString());
+                            Console.WriteLine("Total False Negative {0}: {1} ", partsOfSpeech[i], contorFN[i].ToString());
+                            Console.WriteLine("Total False Positive {0}: {1} ", partsOfSpeech[i], contorFP[i].ToString());
+                            Console.WriteLine("Total True Negative {0}: {1} ", partsOfSpeech[i], contorTN[i].ToString());
+                            Console.WriteLine("SUMA {0}: {1} ", partsOfSpeech[i], (contorTN[i] + contorTP[i] + contorFN[i] + contorFP[i]).ToString());
+                        }
+
+                        Console.WriteLine("Count wordTagTestArray " + wordTagTestArray.Count);
+                        WritePredictionStatistics(wordTagTestArray.Count);
+            */
 
         }
     }
