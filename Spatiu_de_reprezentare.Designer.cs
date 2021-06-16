@@ -42,9 +42,9 @@ namespace POS_Tagging
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.panel2 = new System.Windows.Forms.Panel();
             this.panelLeft = new System.Windows.Forms.Panel();
-            this.customTextBox1 = new POS_Tagging.CustomTextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
+            this.customTextBox1 = new POS_Tagging.CustomTextBox();
             this.panel1.SuspendLayout();
             this.panel3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -192,21 +192,6 @@ namespace POS_Tagging
             this.panelLeft.Size = new System.Drawing.Size(7, 72);
             this.panelLeft.TabIndex = 6;
             // 
-            // customTextBox1
-            // 
-            this.customTextBox1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(216)))), ((int)(((byte)(238)))), ((int)(((byte)(239)))));
-            this.customTextBox1.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(18)))), ((int)(((byte)(118)))), ((int)(((byte)(121)))));
-            this.customTextBox1.BorderSize = 2;
-            this.customTextBox1.Font = new System.Drawing.Font("Century Gothic", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.customTextBox1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(62)))), ((int)(((byte)(120)))), ((int)(((byte)(138)))));
-            this.customTextBox1.Location = new System.Drawing.Point(210, 44);
-            this.customTextBox1.Margin = new System.Windows.Forms.Padding(5);
-            this.customTextBox1.Name = "customTextBox1";
-            this.customTextBox1.Padding = new System.Windows.Forms.Padding(7);
-            this.customTextBox1.Size = new System.Drawing.Size(386, 36);
-            this.customTextBox1.TabIndex = 7;
-            this.customTextBox1.UnderlinedStyle = false;
-            // 
             // label1
             // 
             this.label1.AutoSize = true;
@@ -224,6 +209,21 @@ namespace POS_Tagging
             this.label2.Size = new System.Drawing.Size(82, 21);
             this.label2.TabIndex = 9;
             this.label2.Text = "Predictie:";
+            // 
+            // customTextBox1
+            // 
+            this.customTextBox1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(216)))), ((int)(((byte)(238)))), ((int)(((byte)(239)))));
+            this.customTextBox1.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(18)))), ((int)(((byte)(118)))), ((int)(((byte)(121)))));
+            this.customTextBox1.BorderSize = 2;
+            this.customTextBox1.Font = new System.Drawing.Font("Century Gothic", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.customTextBox1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(62)))), ((int)(((byte)(120)))), ((int)(((byte)(138)))));
+            this.customTextBox1.Location = new System.Drawing.Point(210, 44);
+            this.customTextBox1.Margin = new System.Windows.Forms.Padding(5);
+            this.customTextBox1.Name = "customTextBox1";
+            this.customTextBox1.Padding = new System.Windows.Forms.Padding(7);
+            this.customTextBox1.Size = new System.Drawing.Size(386, 36);
+            this.customTextBox1.TabIndex = 7;
+            this.customTextBox1.UnderlinedStyle = false;
             // 
             // Spatiu_de_reprezentare
             // 

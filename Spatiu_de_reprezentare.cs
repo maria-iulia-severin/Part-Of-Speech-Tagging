@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Windows.Forms;
 using System.Linq;
+using System.Drawing;
 
 namespace POS_Tagging
 {
@@ -48,7 +49,8 @@ namespace POS_Tagging
         double[] pastProbability = new double[9];
         double[] transitions = new double[9];
 
-        string[] testViterbi = { "Yesterday", "Sara", "had","dinner","quickly" };
+        // string[] testViterbi = { "Sara", "had", "dinner", "quickly" };
+        int distanceUnit = 1;
         private void btnReadCorpus_Click(object sender, EventArgs e)
         {
             panelLeft.Height = btnReadCorpus.Height;
@@ -90,34 +92,34 @@ namespace POS_Tagging
                 }
             }
             m.Show();
-           
-           /* for (int i = 0; i < tagTrainArray.Count; i++)
-            {
 
-                Console.WriteLine(initialState[i] + " ");
-            }
+            /* for (int i = 0; i < tagTrainArray.Count; i++)
+             {
 
-            Console.WriteLine();
-            Console.WriteLine("Matricea de Transitie");
-            for (int i = 0; i < tagTrainArray.Count; i++)
-            {
-                for (int j = 0; j < tagTrainArray.Count; j++)
-                {
-                    Console.Write(transitionMatrix[i, j] + " ");
-                }
-                Console.WriteLine();
-            }
+                 Console.WriteLine(initialState[i] + " ");
+             }
 
-            Console.WriteLine();
-            Console.WriteLine("Matricea de eimisie");
-            for (int i = 0; i < wordTrainArray.Count; i++)
-            {
-                for (int j = 0; j < tagTrainArray.Count; j++)
-                {
-                    Console.Write(emissionMatrix[i, j] + " ");
-                }
-                Console.WriteLine();
-            }*/
+             Console.WriteLine();
+             Console.WriteLine("Matricea de Transitie");
+             for (int i = 0; i < tagTrainArray.Count; i++)
+             {
+                 for (int j = 0; j < tagTrainArray.Count; j++)
+                 {
+                     Console.Write(transitionMatrix[i, j] + " ");
+                 }
+                 Console.WriteLine();
+             }
+
+             Console.WriteLine();
+             Console.WriteLine("Matricea de eimisie");
+             for (int i = 0; i < wordTrainArray.Count; i++)
+             {
+                 for (int j = 0; j < tagTrainArray.Count; j++)
+                 {
+                     Console.Write(emissionMatrix[i, j] + " ");
+                 }
+                 Console.WriteLine();
+             }*/
         }
         private void btnPredict_Click(object sender, EventArgs e)
         {
@@ -170,13 +172,84 @@ namespace POS_Tagging
             Console.WriteLine("Count wordTagTestArray " + wordTagTestArray.Count);
             WritePredictionStatistics(wordTagTestArray.Count);
         }
+        string[] testViterbi = new string[100];
+        int index = 1;
+        string[] lineSplit= new string[100];
         private void btn_Viterbi_Click(object sender, EventArgs e)
         {
             panelLeft.Height = btn_Viterbi.Height;
             panelLeft.Top = btn_Viterbi.Top;
+
+            if (index < testViterbi.Length)
+            {
+                testViterbi[index] = Convert.ToString(customTextBox1.Text);
+                index++;
+            }
+
             for (int i = 0; i < testViterbi.Count(); i++)
             {
-                HiddenMarkovModel(testViterbi[i], i);
+                 lineSplit = testViterbi[i].Split(spaceSeparator, StringSplitOptions.RemoveEmptyEntries);
+            }
+
+            for (int i = 0; i < lineSplit.Count(); i++)
+            {
+
+                string test = HiddenMarkovModel(lineSplit[i], i);
+
+
+                CircularButton circle = new CircularButton();
+                this.Controls.Add(circle);
+                distanceUnit += 1;
+                if (test == "noun")
+                {
+                    circle.BackColor = Color.FromArgb(87, 127, 180);
+                }
+                else if (test == "verb")
+                {
+                    circle.BackColor = Color.FromArgb(0, 194, 203);
+                }
+                else if (test == "adjective")
+                {
+                    circle.BackColor = Color.FromArgb(56, 182, 255);
+                }
+                else if (test == "adverb")
+                {
+                    circle.BackColor = Color.FromArgb(242, 209, 201);
+                }
+                else if (test == "pronoun")
+                {
+                    circle.BackColor = Color.FromArgb(175, 179, 247);
+                }
+                else if (test == "conjunction")
+                {
+                    circle.BackColor = Color.FromArgb(145, 215, 223);
+                }
+                else if (test == "article")
+                {
+                    circle.BackColor = Color.FromArgb(162, 250, 163);
+                }
+                else if (test == "preposition")
+                {
+                    circle.BackColor = Color.FromArgb(188, 217, 121);
+                }
+                else
+                {
+                    circle.BackColor = Color.FromArgb(91, 108, 93);
+                }
+
+                circle.Enabled = false;
+                circle.FlatAppearance.BorderSize = 0;
+                circle.FlatStyle = FlatStyle.Flat;
+                circle.ForeColor = Color.White;
+                circle.Font = new Font("Century Gothic", 12F, FontStyle.Bold, GraphicsUnit.Point, ((byte)(0)));
+                // circle.Location = new System.Drawing.Point(251, 183);
+                circle.Name = "circularButton1";
+                circle.Size = new Size(124, 116);
+                circle.TabIndex = 10;
+                circle.Text = test;
+                //  circle.UseVisualStyleBackColor = false;
+                circle.Top = 177;
+                circle.Left = distanceUnit * 130;
             }
         }
         private string HiddenMarkovModel(string word, int position)
@@ -193,8 +266,8 @@ namespace POS_Tagging
                     currentProbability[i] = ViterbiS0(word0, pos);
                 }
                 CopyCurrentProbabilityToLastProbability();
-                Console.WriteLine(word + " " + GetPosFromCurrentProbability(currentProbability.Max()));
-                return GetPosFromCurrentProbability(currentProbability.Max());
+                Console.WriteLine(word + " " + GetPoSFromCurrentProbability(currentProbability.Max()));
+                return GetPoSFromCurrentProbability(currentProbability.Max());
             }
             else
             {
@@ -205,11 +278,11 @@ namespace POS_Tagging
                     currentProbability[j] = ViterbiSn(wordn, pos);
                 }
                 CopyCurrentProbabilityToLastProbability();
-                Console.WriteLine(word + " " + GetPosFromCurrentProbability(currentProbability.Max()));
-                return GetPosFromCurrentProbability(currentProbability.Max());
+                Console.WriteLine(word + " " + GetPoSFromCurrentProbability(currentProbability.Max()));
+                return GetPoSFromCurrentProbability(currentProbability.Max());
             }
         }
-        private string GetPosFromCurrentProbability(double probability)
+        private string GetPoSFromCurrentProbability(double probability)
         {
             for (int i = 0; i < partsOfSpeech.Count; i++)
             {
@@ -233,7 +306,7 @@ namespace POS_Tagging
             foreach (string pos2 in partsOfSpeech)
             {
                 posPast = GetTagPosition(pos2);
-                transitions[posPast] = emissionMatrix[word, posCurrent] * transitionMatrix[posPast, posCurrent];     
+                transitions[posPast] = emissionMatrix[word, posCurrent] * transitionMatrix[posPast, posCurrent];
             }
 
             double[] tempProbbility = new double[9];
@@ -241,7 +314,7 @@ namespace POS_Tagging
             {
                 tempProbbility[i] = pastProbability[i] * transitions[i];
             }
-            return tempProbbility.Max(); 
+            return tempProbbility.Max();
         }
         private void CopyCurrentProbabilityToLastProbability()
         {
