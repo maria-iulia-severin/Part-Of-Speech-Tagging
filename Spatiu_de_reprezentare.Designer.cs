@@ -39,24 +39,28 @@ namespace POS_Tagging
             this.panel6 = new System.Windows.Forms.Panel();
             this.panel4 = new System.Windows.Forms.Panel();
             this.panel3 = new System.Windows.Forms.Panel();
-            this.label1 = new System.Windows.Forms.Label();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.panel2 = new System.Windows.Forms.Panel();
             this.panelLeft = new System.Windows.Forms.Panel();
+            this.customTextBox1 = new POS_Tagging.CustomTextBox();
+            this.label1 = new System.Windows.Forms.Label();
+            this.label2 = new System.Windows.Forms.Label();
             this.panel1.SuspendLayout();
             this.panel3.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
             // btnReadCorpus
             // 
             this.btnReadCorpus.FlatAppearance.BorderSize = 0;
             this.btnReadCorpus.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnReadCorpus.Font = new System.Drawing.Font("Century Gothic", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnReadCorpus.ForeColor = System.Drawing.Color.White;
+            this.btnReadCorpus.Font = new System.Drawing.Font("Century Gothic", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnReadCorpus.ForeColor = System.Drawing.Color.DarkSlateGray;
             this.btnReadCorpus.Image = ((System.Drawing.Image)(resources.GetObject("btnReadCorpus.Image")));
-            this.btnReadCorpus.Location = new System.Drawing.Point(0, 130);
+            this.btnReadCorpus.Location = new System.Drawing.Point(2, 130);
             this.btnReadCorpus.Margin = new System.Windows.Forms.Padding(2);
             this.btnReadCorpus.Name = "btnReadCorpus";
-            this.btnReadCorpus.Size = new System.Drawing.Size(184, 88);
+            this.btnReadCorpus.Size = new System.Drawing.Size(182, 88);
             this.btnReadCorpus.TabIndex = 0;
             this.btnReadCorpus.Text = "Read Corpus";
             this.btnReadCorpus.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
@@ -72,8 +76,8 @@ namespace POS_Tagging
             // 
             this.loadMatrixFile.FlatAppearance.BorderSize = 0;
             this.loadMatrixFile.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.loadMatrixFile.Font = new System.Drawing.Font("Century Gothic", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.loadMatrixFile.ForeColor = System.Drawing.Color.White;
+            this.loadMatrixFile.Font = new System.Drawing.Font("Century Gothic", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.loadMatrixFile.ForeColor = System.Drawing.Color.DarkSlateGray;
             this.loadMatrixFile.Image = ((System.Drawing.Image)(resources.GetObject("loadMatrixFile.Image")));
             this.loadMatrixFile.Location = new System.Drawing.Point(1, 218);
             this.loadMatrixFile.Margin = new System.Windows.Forms.Padding(2);
@@ -90,8 +94,8 @@ namespace POS_Tagging
             // 
             this.btnPredict.FlatAppearance.BorderSize = 0;
             this.btnPredict.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnPredict.Font = new System.Drawing.Font("Century Gothic", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnPredict.ForeColor = System.Drawing.Color.White;
+            this.btnPredict.Font = new System.Drawing.Font("Century Gothic", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnPredict.ForeColor = System.Drawing.Color.DarkSlateGray;
             this.btnPredict.Image = ((System.Drawing.Image)(resources.GetObject("btnPredict.Image")));
             this.btnPredict.Location = new System.Drawing.Point(1, 299);
             this.btnPredict.Margin = new System.Windows.Forms.Padding(2);
@@ -108,8 +112,8 @@ namespace POS_Tagging
             // 
             this.btn_Viterbi.FlatAppearance.BorderSize = 0;
             this.btn_Viterbi.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btn_Viterbi.Font = new System.Drawing.Font("Century Gothic", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btn_Viterbi.ForeColor = System.Drawing.Color.White;
+            this.btn_Viterbi.Font = new System.Drawing.Font("Century Gothic", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btn_Viterbi.ForeColor = System.Drawing.Color.DarkSlateGray;
             this.btn_Viterbi.Image = ((System.Drawing.Image)(resources.GetObject("btn_Viterbi.Image")));
             this.btn_Viterbi.Location = new System.Drawing.Point(1, 386);
             this.btn_Viterbi.Margin = new System.Windows.Forms.Padding(2);
@@ -154,23 +158,23 @@ namespace POS_Tagging
             // 
             // panel3
             // 
-            this.panel3.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(192)))), ((int)(((byte)(0)))));
-            this.panel3.Controls.Add(this.label1);
+            this.panel3.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(18)))), ((int)(((byte)(118)))), ((int)(((byte)(121)))));
+            this.panel3.Controls.Add(this.pictureBox1);
             this.panel3.Dock = System.Windows.Forms.DockStyle.Top;
             this.panel3.Location = new System.Drawing.Point(0, 0);
             this.panel3.Name = "panel3";
             this.panel3.Size = new System.Drawing.Size(186, 100);
             this.panel3.TabIndex = 0;
             // 
-            // label1
+            // pictureBox1
             // 
-            this.label1.AutoSize = true;
-            this.label1.Font = new System.Drawing.Font("Monotype Corsiva", 48F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label1.Location = new System.Drawing.Point(12, 0);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(157, 97);
-            this.label1.TabIndex = 0;
-            this.label1.Text = "PoS";
+            this.pictureBox1.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox1.Image")));
+            this.pictureBox1.Location = new System.Drawing.Point(1, 22);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(183, 58);
+            this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
+            this.pictureBox1.TabIndex = 0;
+            this.pictureBox1.TabStop = false;
             // 
             // panel2
             // 
@@ -182,17 +186,53 @@ namespace POS_Tagging
             // 
             // panelLeft
             // 
-            this.panelLeft.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(192)))), ((int)(((byte)(0)))));
+            this.panelLeft.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(18)))), ((int)(((byte)(118)))), ((int)(((byte)(121)))));
             this.panelLeft.Location = new System.Drawing.Point(186, 139);
             this.panelLeft.Name = "panelLeft";
             this.panelLeft.Size = new System.Drawing.Size(7, 72);
             this.panelLeft.TabIndex = 6;
             // 
+            // customTextBox1
+            // 
+            this.customTextBox1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(216)))), ((int)(((byte)(238)))), ((int)(((byte)(239)))));
+            this.customTextBox1.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(18)))), ((int)(((byte)(118)))), ((int)(((byte)(121)))));
+            this.customTextBox1.BorderSize = 2;
+            this.customTextBox1.Font = new System.Drawing.Font("Century Gothic", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.customTextBox1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(62)))), ((int)(((byte)(120)))), ((int)(((byte)(138)))));
+            this.customTextBox1.Location = new System.Drawing.Point(210, 44);
+            this.customTextBox1.Margin = new System.Windows.Forms.Padding(5);
+            this.customTextBox1.Name = "customTextBox1";
+            this.customTextBox1.Padding = new System.Windows.Forms.Padding(7);
+            this.customTextBox1.Size = new System.Drawing.Size(386, 36);
+            this.customTextBox1.TabIndex = 7;
+            this.customTextBox1.UnderlinedStyle = false;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(206, 18);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(195, 21);
+            this.label1.TabIndex = 8;
+            this.label1.Text = "Introduceti o propoziție:";
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(206, 114);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(82, 21);
+            this.label2.TabIndex = 9;
+            this.label2.Text = "Predictie:";
+            // 
             // Spatiu_de_reprezentare
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
-            this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(41)))), ((int)(((byte)(44)))), ((int)(((byte)(51)))));
+            this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(216)))), ((int)(((byte)(238)))), ((int)(((byte)(239)))));
             this.ClientSize = new System.Drawing.Size(1135, 551);
+            this.Controls.Add(this.label2);
+            this.Controls.Add(this.label1);
+            this.Controls.Add(this.customTextBox1);
             this.Controls.Add(this.panelLeft);
             this.Controls.Add(this.panel2);
             this.Controls.Add(this.panel1);
@@ -205,8 +245,9 @@ namespace POS_Tagging
             this.Text = "Part-of-Speech Tagging";
             this.panel1.ResumeLayout(false);
             this.panel3.ResumeLayout(false);
-            this.panel3.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -218,12 +259,15 @@ namespace POS_Tagging
         private System.Windows.Forms.Button btn_Viterbi;
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.Panel panel3;
-        private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Panel panel2;
         private System.Windows.Forms.Panel panel6;
         private System.Windows.Forms.Panel panel4;
         private System.Windows.Forms.Panel panelLeft;
         private System.Windows.Forms.OpenFileDialog openFileDialog;
+        private System.Windows.Forms.PictureBox pictureBox1;
+        private CustomTextBox customTextBox1;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label label2;
     }
 }
 

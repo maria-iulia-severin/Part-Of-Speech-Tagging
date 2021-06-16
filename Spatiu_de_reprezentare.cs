@@ -57,6 +57,8 @@ namespace POS_Tagging
         }
         private void loadMatrixFile_Click(object sender, EventArgs e)
         {
+            msg m = new msg();
+
             panelLeft.Height = loadMatrixFile.Height;
             panelLeft.Top = loadMatrixFile.Top;
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
@@ -87,13 +89,9 @@ namespace POS_Tagging
                     }
                 }
             }
-
-           // MessageBox.Show("File loaded succesfully!");
-            msg m = new msg();
             m.Show();
-
-
-            for (int i = 0; i < tagTrainArray.Count; i++)
+           
+           /* for (int i = 0; i < tagTrainArray.Count; i++)
             {
 
                 Console.WriteLine(initialState[i] + " ");
@@ -119,7 +117,7 @@ namespace POS_Tagging
                     Console.Write(emissionMatrix[i, j] + " ");
                 }
                 Console.WriteLine();
-            }
+            }*/
         }
         private void btnPredict_Click(object sender, EventArgs e)
         {
