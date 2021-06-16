@@ -88,8 +88,9 @@ namespace POS_Tagging
                 }
             }
 
-            MessageBox.Show("File loaded succesfully!");
-         
+           // MessageBox.Show("File loaded succesfully!");
+            msg m = new msg();
+            m.Show();
 
 
             for (int i = 0; i < tagTrainArray.Count; i++)
