@@ -74,7 +74,7 @@ namespace POS_Tagging
             // msg
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
-            this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(41)))), ((int)(((byte)(44)))), ((int)(((byte)(51)))));
+            this.BackColor = System.Drawing.Color.WhiteSmoke;
             this.ClientSize = new System.Drawing.Size(343, 182);
             this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.panelMSG);

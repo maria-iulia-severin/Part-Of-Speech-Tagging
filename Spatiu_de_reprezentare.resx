@@ -159,6 +159,15 @@
         SUVORK5CYII=
 </value>
   </data>
+  <data name="btnStatistici.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAADwAAAAeCAYAAABwmH1PAAAABGdBTUEAALGPC/xhBQAAAN1JREFUWEft
+        kUEKwzAMBH3pB9I/5gkt7bHQV/eQkrAKbpANkRQqxR5YcCzb7JD0D4bbY5qDz3NDss1I55JNSJNkHozO
+        BSeaB8fiwclogmf9UiqaS3DBsZXSvitqJWlWCo79UJu5wLpgF/bGtuD19Z4kwfV4wvS9N7geT1hLF/ZG
+        qaC0dFhhgua14OgCt+eKbUFtYe39w7EuGFZYWjqk8HB/frBc57Xg6AK35wq24DhesNpNTGEFYYWlpcMJ
+        awtr7x+OdcEu7I3mhGeshbH0C/0Vq+BZ33DFJcFzhqT0BWw32j2n0kW5AAAAAElFTkSuQmCC
+</value>
+  </data>
   <data name="pictureBox1.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAAKAAAAAwCAYAAACWqXFuAAAABGdBTUEAALGPC/xhBQAADW5JREFUeF7t

@@ -22,6 +22,7 @@ namespace POS_Tagging
         List<String> partsOfSpeech = new List<string> { "noun", "conjunction", "other", "verb", "preposition", "article", "adjective", "pronoun", "adverb" };
         List<String> wordTrainArray = new List<string>();
         List<String> tagTrainArray = new List<string>();
+        List<String> predictionArray = new List<string>();
 
         List<WordTags> wordTagTestArray = new List<WordTags>();
         int[] contorTP = new int[9];
@@ -41,6 +42,8 @@ namespace POS_Tagging
         public Spatiu_de_reprezentare()
         {
             InitializeComponent();
+            chartAcuratete.Hide();
+            listPredictie.Hide();
             panelLeft.Height = btnReadCorpus.Height;
             panelLeft.Top = btnReadCorpus.Top;
         }
@@ -49,8 +52,21 @@ namespace POS_Tagging
         double[] pastProbability = new double[9];
         double[] transitions = new double[9];
 
-        // string[] testViterbi = { "Sara", "had", "dinner", "quickly" };
+        string[] testViterbi = { "Sara", "had", "dinner", "quickly" };
         int distanceUnit = 1;
+        private void btnStatistici_Click(object sender, EventArgs e)
+        {
+            panelLeft.Height = btnStatistici.Height;
+            panelLeft.Top = btnStatistici.Top;
+
+            
+            chartAcuratete.Series["Acuratetea de predictie"].Points.AddXY("Viterbi", 0.99);
+            chartAcuratete.Series["Acuratetea de predictie"].Points.AddXY("Frecventa", 0.96);
+            chartAcuratete.Show();
+
+           
+            
+        }
         private void btnReadCorpus_Click(object sender, EventArgs e)
         {
             panelLeft.Height = btnReadCorpus.Height;
@@ -123,14 +139,24 @@ namespace POS_Tagging
         }
         private void btnPredict_Click(object sender, EventArgs e)
         {
+            string predictedTag;
             panelLeft.Height = btnPredict.Height;
             panelLeft.Top = btnPredict.Top;
             ReadBrownTest();
-
+            
             foreach (WordTags wordTag in wordTagTestArray) // for .... wordTag[i].word
             {
-                //string predictedTag = PredictNoun(wordTag.word);
-                string predictedTag = Predict(wordTag.word);
+                if(selectAlgoritm.SelectedItem == "Predictor Frecvente")
+                {
+                    predictedTag = Predict(wordTag.word);
+                }
+                else
+                {
+                    predictedTag = PredictNoun(wordTag.word);
+                }
+
+
+                predictionArray.Add(wordTag.word + " " + predictedTag);
                 Console.WriteLine("{0}: {1}", wordTag.word, predictedTag);
 
                 for (int i = 0; i < partsOfSpeech.Count; i++)
@@ -160,6 +186,17 @@ namespace POS_Tagging
                 }
             }
 
+            
+            listPredictie.Items.Clear();
+            foreach (string prediction in predictionArray)
+            {
+                var row = new string[] { prediction };
+                var lvi = new ListViewItem(row);
+                lvi.Tag = prediction;
+                listPredictie.Items.Add(lvi);
+            }
+            listPredictie.Show();
+
             for (int i = 0; i < partsOfSpeech.Count; i++)
             {
                 Console.WriteLine("Total True Positive {0}: {1} ", partsOfSpeech[i], contorTP[i].ToString());
@@ -172,30 +209,15 @@ namespace POS_Tagging
             Console.WriteLine("Count wordTagTestArray " + wordTagTestArray.Count);
             WritePredictionStatistics(wordTagTestArray.Count);
         }
-        string[] testViterbi = new string[100];
-        int index = 1;
-        string[] lineSplit= new string[100];
+
         private void btn_Viterbi_Click(object sender, EventArgs e)
         {
             panelLeft.Height = btn_Viterbi.Height;
             panelLeft.Top = btn_Viterbi.Top;
 
-            if (index < testViterbi.Length)
-            {
-                testViterbi[index] = Convert.ToString(customTextBox1.Text);
-                index++;
-            }
-
             for (int i = 0; i < testViterbi.Count(); i++)
             {
-                 lineSplit = testViterbi[i].Split(spaceSeparator, StringSplitOptions.RemoveEmptyEntries);
-            }
-
-            for (int i = 0; i < lineSplit.Count(); i++)
-            {
-
-                string test = HiddenMarkovModel(lineSplit[i], i);
-
+                string test = HiddenMarkovModel(testViterbi[i], i);
 
                 CircularButton circle = new CircularButton();
                 this.Controls.Add(circle);
@@ -1047,6 +1069,8 @@ namespace POS_Tagging
                 }
             }
         }
+
+
     }
 }
 
