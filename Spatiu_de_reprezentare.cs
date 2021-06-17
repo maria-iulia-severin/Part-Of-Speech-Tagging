@@ -40,6 +40,7 @@ namespace POS_Tagging
         int countTotalNumberOfTagsInTrain = 0; // numar total etichetari pt a dat 1 pe linie
 
         char[] separators = new char[] { ' ', '\r', '\n', '\t' };
+        char[] viterbiSeparators = new char[] { '?', '!', '-', '+', '*', ' ', '`', '\'', '.', ',', ':', ';', '(', ')', '$', '\r', '\n', '\t' };
         char[] spaceSeparator = new char[] { ' ' };
         public Spatiu_de_reprezentare()
         {
@@ -54,7 +55,8 @@ namespace POS_Tagging
         double[] pastProbability = new double[9];
         double[] transitions = new double[9];
 
-        string[] testViterbi = { "Will", "can", "spot", "Mary"};
+        //string[] testViterbi = { "Will", "can", "spot", "Mary"};
+        string[] testViterbi;
         int distanceUnit = 1;
         private void btnStatistici_Click(object sender, EventArgs e)
         {
@@ -216,12 +218,33 @@ namespace POS_Tagging
             panelLeft.Height = btn_Viterbi.Height;
             panelLeft.Top = btn_Viterbi.Top;
 
+            int topValue;
+            int leftValue;
+            string viterbiSentence = textBoxSentence.Text;
+            testViterbi = viterbiSentence.Split(viterbiSeparators, StringSplitOptions.RemoveEmptyEntries);
+
             for (int i = 0; i < testViterbi.Count(); i++)
             {
                 string test = HiddenMarkovModel(testViterbi[i], i);
-
                 CircularButton circle = new CircularButton();
                 this.Controls.Add(circle);
+
+                if (i == 6)
+                {
+                    topValue = distanceUnit * 177;
+                    leftValue = 130;
+                }
+                else if (i > 8)
+                {
+                    topValue = 187;
+                    leftValue = distanceUnit * 130;
+                }
+                else
+                {
+                    topValue = 177;
+                    leftValue = distanceUnit * 130;
+                }
+
                 distanceUnit += 1;
                 if (test == "noun")
                 {
@@ -265,13 +288,12 @@ namespace POS_Tagging
                 circle.FlatStyle = FlatStyle.Flat;
                 circle.ForeColor = Color.White;
                 circle.Font = new Font("Century Gothic", 12F, FontStyle.Bold, GraphicsUnit.Point, ((byte)(0)));
-                // circle.Location = new System.Drawing.Point(251, 183);
                 circle.Name = "circularButton1";
                 circle.Size = new Size(124, 116);
                 circle.TabIndex = 10;
                 circle.Text = test;
-                circle.Top = 177;
-                circle.Left = distanceUnit * 130;
+                circle.Location = new System.Drawing.Point(leftValue, topValue);
+
             }
         }
         private string HiddenMarkovModel(string word, int position)

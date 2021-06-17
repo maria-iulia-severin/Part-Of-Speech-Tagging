@@ -39,7 +39,7 @@ namespace POS_Tagging
             this.textBoxPropozitie.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(62)))), ((int)(((byte)(120)))), ((int)(((byte)(138)))));
             this.textBoxPropozitie.Location = new System.Drawing.Point(7, 7);
             this.textBoxPropozitie.Name = "textBoxPropozitie";
-            this.textBoxPropozitie.Size = new System.Drawing.Size(486, 20);
+            this.textBoxPropozitie.Size = new System.Drawing.Size(486, 25);
             this.textBoxPropozitie.TabIndex = 0;
             // 
             // CustomTextBox

@@ -30,9 +30,9 @@ namespace POS_Tagging
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Spatiu_de_reprezentare));
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea2 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Legend legend2 = new System.Windows.Forms.DataVisualization.Charting.Legend();
-            System.Windows.Forms.DataVisualization.Charting.Series series2 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea4 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend4 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Series series4 = new System.Windows.Forms.DataVisualization.Charting.Series();
             this.btnReadCorpus = new System.Windows.Forms.Button();
             this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.loadMatrixFile = new System.Windows.Forms.Button();
@@ -53,9 +53,10 @@ namespace POS_Tagging
             this.panelLeft = new System.Windows.Forms.Panel();
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
-            this.customTextBox1 = new POS_Tagging.CustomTextBox();
             this.listPredictie = new System.Windows.Forms.ListView();
             this.Cuvant = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.textBoxSentence = new System.Windows.Forms.TextBox();
+            this.panel5 = new System.Windows.Forms.Panel();
             this.panel1.SuspendLayout();
             this.panel3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -166,7 +167,7 @@ namespace POS_Tagging
             this.label5.ForeColor = System.Drawing.Color.DarkSlateGray;
             this.label5.Location = new System.Drawing.Point(28, 202);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(132, 21);
+            this.label5.Size = new System.Drawing.Size(157, 23);
             this.label5.TabIndex = 10;
             this.label5.Text = "Algoritm utilizat";
             // 
@@ -180,7 +181,7 @@ namespace POS_Tagging
             "Predictor Frecvente"});
             this.selectAlgoritm.Location = new System.Drawing.Point(8, 170);
             this.selectAlgoritm.Name = "selectAlgoritm";
-            this.selectAlgoritm.Size = new System.Drawing.Size(168, 29);
+            this.selectAlgoritm.Size = new System.Drawing.Size(168, 31);
             this.selectAlgoritm.TabIndex = 13;
             this.selectAlgoritm.Tag = "";
             // 
@@ -208,7 +209,7 @@ namespace POS_Tagging
             this.label4.Font = new System.Drawing.Font("Century Gothic", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label4.Location = new System.Drawing.Point(3, 383);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(66, 19);
+            this.label4.Size = new System.Drawing.Size(84, 23);
             this.label4.TabIndex = 11;
             this.label4.Text = "Testare:";
             // 
@@ -218,7 +219,7 @@ namespace POS_Tagging
             this.label3.Font = new System.Drawing.Font("Century Gothic", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label3.Location = new System.Drawing.Point(3, 72);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(72, 19);
+            this.label3.Size = new System.Drawing.Size(94, 23);
             this.label3.TabIndex = 10;
             this.label3.Text = "Statistici:";
             // 
@@ -268,18 +269,18 @@ namespace POS_Tagging
             // chartAcuratete
             // 
             this.chartAcuratete.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(216)))), ((int)(((byte)(238)))), ((int)(((byte)(239)))));
-            chartArea2.Name = "ChartArea1";
-            this.chartAcuratete.ChartAreas.Add(chartArea2);
-            legend2.Name = "Legend1";
-            this.chartAcuratete.Legends.Add(legend2);
+            chartArea4.Name = "ChartArea1";
+            this.chartAcuratete.ChartAreas.Add(chartArea4);
+            legend4.Name = "Legend1";
+            this.chartAcuratete.Legends.Add(legend4);
             this.chartAcuratete.Location = new System.Drawing.Point(3, 1);
             this.chartAcuratete.Name = "chartAcuratete";
             this.chartAcuratete.Palette = System.Windows.Forms.DataVisualization.Charting.ChartColorPalette.Pastel;
-            series2.ChartArea = "ChartArea1";
-            series2.Legend = "Legend1";
-            series2.Name = "Acuratetea de predictie";
-            series2.YValuesPerPoint = 6;
-            this.chartAcuratete.Series.Add(series2);
+            series4.ChartArea = "ChartArea1";
+            series4.Legend = "Legend1";
+            series4.Name = "Acuratetea de predictie";
+            series4.YValuesPerPoint = 6;
+            this.chartAcuratete.Series.Add(series4);
             this.chartAcuratete.Size = new System.Drawing.Size(627, 248);
             this.chartAcuratete.TabIndex = 10;
             // 
@@ -296,7 +297,7 @@ namespace POS_Tagging
             this.label1.AutoSize = true;
             this.label1.Location = new System.Drawing.Point(206, 18);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(195, 21);
+            this.label1.Size = new System.Drawing.Size(238, 23);
             this.label1.TabIndex = 8;
             this.label1.Text = "Introduceti o propoziție:";
             // 
@@ -305,24 +306,9 @@ namespace POS_Tagging
             this.label2.AutoSize = true;
             this.label2.Location = new System.Drawing.Point(206, 114);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(82, 21);
+            this.label2.Size = new System.Drawing.Size(99, 23);
             this.label2.TabIndex = 9;
             this.label2.Text = "Predictie:";
-            // 
-            // customTextBox1
-            // 
-            this.customTextBox1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(216)))), ((int)(((byte)(238)))), ((int)(((byte)(239)))));
-            this.customTextBox1.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(18)))), ((int)(((byte)(118)))), ((int)(((byte)(121)))));
-            this.customTextBox1.BorderSize = 2;
-            this.customTextBox1.Font = new System.Drawing.Font("Century Gothic", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.customTextBox1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(62)))), ((int)(((byte)(120)))), ((int)(((byte)(138)))));
-            this.customTextBox1.Location = new System.Drawing.Point(210, 44);
-            this.customTextBox1.Margin = new System.Windows.Forms.Padding(5);
-            this.customTextBox1.Name = "customTextBox1";
-            this.customTextBox1.Padding = new System.Windows.Forms.Padding(7);
-            this.customTextBox1.Size = new System.Drawing.Size(386, 36);
-            this.customTextBox1.TabIndex = 7;
-            this.customTextBox1.UnderlinedStyle = false;
             // 
             // listPredictie
             // 
@@ -347,15 +333,34 @@ namespace POS_Tagging
             this.Cuvant.Text = "Cuvant  Predictie";
             this.Cuvant.Width = 200;
             // 
+            // textBoxSentence
+            // 
+            this.textBoxSentence.BackColor = System.Drawing.Color.White;
+            this.textBoxSentence.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.textBoxSentence.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(62)))), ((int)(((byte)(120)))), ((int)(((byte)(138)))));
+            this.textBoxSentence.Location = new System.Drawing.Point(210, 53);
+            this.textBoxSentence.Name = "textBoxSentence";
+            this.textBoxSentence.Size = new System.Drawing.Size(761, 25);
+            this.textBoxSentence.TabIndex = 11;
+            // 
+            // panel5
+            // 
+            this.panel5.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(62)))), ((int)(((byte)(120)))), ((int)(((byte)(138)))));
+            this.panel5.Location = new System.Drawing.Point(210, 79);
+            this.panel5.Name = "panel5";
+            this.panel5.Size = new System.Drawing.Size(761, 10);
+            this.panel5.TabIndex = 12;
+            // 
             // Spatiu_de_reprezentare
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(216)))), ((int)(((byte)(238)))), ((int)(((byte)(239)))));
             this.ClientSize = new System.Drawing.Size(1135, 551);
+            this.Controls.Add(this.panel5);
+            this.Controls.Add(this.textBoxSentence);
             this.Controls.Add(this.listPredictie);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
-            this.Controls.Add(this.customTextBox1);
             this.Controls.Add(this.panelLeft);
             this.Controls.Add(this.panel2);
             this.Controls.Add(this.panel1);
@@ -391,7 +396,6 @@ namespace POS_Tagging
         private System.Windows.Forms.Panel panelLeft;
         private System.Windows.Forms.OpenFileDialog openFileDialog;
         private System.Windows.Forms.PictureBox pictureBox1;
-        private CustomTextBox customTextBox1;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label4;
@@ -402,6 +406,8 @@ namespace POS_Tagging
         private System.Windows.Forms.DataVisualization.Charting.Chart chartAcuratete;
         private System.Windows.Forms.ListView listPredictie;
         private System.Windows.Forms.ColumnHeader Cuvant;
+        private System.Windows.Forms.TextBox textBoxSentence;
+        private System.Windows.Forms.Panel panel5;
     }
 }
 
