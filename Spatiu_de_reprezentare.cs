@@ -219,9 +219,8 @@ namespace POS_Tagging
         {
             panelLeft.Height = btn_Viterbi.Height;
             panelLeft.Top = btn_Viterbi.Top;
-
-            int topValue;
-            int leftValue;
+            int topValue = 145;
+            int leftValue = 200;
             string viterbiSentence = textBoxSentence.Text;
             testViterbi = viterbiSentence.Split(viterbiSeparators, StringSplitOptions.RemoveEmptyEntries);
 
@@ -231,23 +230,7 @@ namespace POS_Tagging
                 CircularButton circle = new CircularButton();
                 this.Controls.Add(circle);
 
-                if (i == 6)
-                {
-                    topValue = distanceUnit * 177;
-                    leftValue = 130;
-                }
-                else if (i > 8)
-                {
-                    topValue = 187;
-                    leftValue = distanceUnit * 130;
-                }
-                else
-                {
-                    topValue = 177;
-                    leftValue = distanceUnit * 130;
-                }
 
-                distanceUnit += 1;
                 if (test == "noun")
                 {
                     circle.BackColor = Color.FromArgb(87, 127, 180);
@@ -291,11 +274,11 @@ namespace POS_Tagging
                 circle.ForeColor = Color.White;
                 circle.Font = new Font("Century Gothic", 12F, FontStyle.Bold, GraphicsUnit.Point, ((byte)(0)));
                 circle.Name = "circularButton1";
-                circle.Size = new Size(600 / testViterbi.Count(), 600 / testViterbi.Count());
+                circle.Size = new Size(400 / testViterbi.Count(), 400 / testViterbi.Count());
                 circle.TabIndex = 10;
                 circle.Text = test;
-                circle.Location = new System.Drawing.Point(leftValue, topValue);
-
+                circle.Location = new Point(distanceUnit * leftValue, topValue);
+                distanceUnit += 1;
             }
         }
         private string HiddenMarkovModel(string word, int position)
