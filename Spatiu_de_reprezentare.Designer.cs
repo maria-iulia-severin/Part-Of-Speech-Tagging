@@ -30,9 +30,9 @@ namespace POS_Tagging
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Spatiu_de_reprezentare));
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea3 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Legend legend3 = new System.Windows.Forms.DataVisualization.Charting.Legend();
-            System.Windows.Forms.DataVisualization.Charting.Series series3 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea1 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend1 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Series series1 = new System.Windows.Forms.DataVisualization.Charting.Series();
             this.btnReadCorpus = new System.Windows.Forms.Button();
             this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.loadMatrixFile = new System.Windows.Forms.Button();
@@ -271,18 +271,18 @@ namespace POS_Tagging
             // chartAcuratete
             // 
             this.chartAcuratete.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(216)))), ((int)(((byte)(238)))), ((int)(((byte)(239)))));
-            chartArea3.Name = "ChartArea1";
-            this.chartAcuratete.ChartAreas.Add(chartArea3);
-            legend3.Name = "Legend1";
-            this.chartAcuratete.Legends.Add(legend3);
+            chartArea1.Name = "ChartArea1";
+            this.chartAcuratete.ChartAreas.Add(chartArea1);
+            legend1.Name = "Legend1";
+            this.chartAcuratete.Legends.Add(legend1);
             this.chartAcuratete.Location = new System.Drawing.Point(3, 1);
             this.chartAcuratete.Name = "chartAcuratete";
             this.chartAcuratete.Palette = System.Windows.Forms.DataVisualization.Charting.ChartColorPalette.Pastel;
-            series3.ChartArea = "ChartArea1";
-            series3.Legend = "Legend1";
-            series3.Name = "Acuratetea de predictie";
-            series3.YValuesPerPoint = 6;
-            this.chartAcuratete.Series.Add(series3);
+            series1.ChartArea = "ChartArea1";
+            series1.Legend = "Legend1";
+            series1.Name = "Acuratetea de predictie";
+            series1.YValuesPerPoint = 6;
+            this.chartAcuratete.Series.Add(series1);
             this.chartAcuratete.Size = new System.Drawing.Size(627, 248);
             this.chartAcuratete.TabIndex = 10;
             // 
@@ -344,6 +344,7 @@ namespace POS_Tagging
             this.textBoxSentence.Name = "textBoxSentence";
             this.textBoxSentence.Size = new System.Drawing.Size(761, 25);
             this.textBoxSentence.TabIndex = 11;
+            this.textBoxSentence.Text = "Will can spot Mary";
             // 
             // panel5
             // 

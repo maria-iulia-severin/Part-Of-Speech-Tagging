@@ -27,6 +27,8 @@ namespace POS_Tagging
         List<WordTags> wordTagTestArray = new List<WordTags>();
         List<WordTags> wordTagViterbiArray = new List<WordTags>();
 
+        private List<ViterbiPath> viterbiPaths = new List<ViterbiPath>();
+
         int[] contorTP = new int[9];
         int[] contorTN = new int[9];
         int[] contorFP = new int[9];
@@ -56,7 +58,8 @@ namespace POS_Tagging
         double[] transitions = new double[9];
 
         string[] testViterbi;
-        int distanceUnit = 1;
+        double distanceUnit = 1;
+        List<CircularButton> circles = new List<CircularButton>();
         private void btnStatistici_Click(object sender, EventArgs e)
         {
             panelLeft.Height = btnStatistici.Height;
@@ -212,77 +215,121 @@ namespace POS_Tagging
             }
             else
             {
-                ReadBrownViterbiTest();
+                //ReadBrownViterbiTest();
             }
         }
         private void btn_Viterbi_Click(object sender, EventArgs e)
         {
+            List<List<ViterbiNode>> viterbiList = new List<List<ViterbiNode>>();
             panelLeft.Height = btn_Viterbi.Height;
             panelLeft.Top = btn_Viterbi.Top;
+
+            ClearCircles();
+
             int topValue = 145;
             int leftValue = 200;
             string viterbiSentence = textBoxSentence.Text;
             testViterbi = viterbiSentence.Split(viterbiSeparators, StringSplitOptions.RemoveEmptyEntries);
 
+            double distancePass = 5 / testViterbi.Count();
+            int circleSize = 450 / testViterbi.Count();
+
             for (int i = 0; i < testViterbi.Count(); i++)
             {
-                string test = HiddenMarkovModel(testViterbi[i], i);
-                CircularButton circle = new CircularButton();
-                this.Controls.Add(circle);
+                viterbiList.Add(HiddenMarkovModel(testViterbi[i], i, viterbiList.Count == 0 ? null : viterbiList.Last()));
+            }
 
+            foreach (ViterbiNode lastNodeFromPhrase in viterbiList.Last())
+            {
+                ViterbiPathRec(new ViterbiPath(), lastNodeFromPhrase, 1);
+            }
 
-                if (test == "noun")
+            viterbiPaths = viterbiPaths.Where(p => p.nodes.Count == testViterbi.Count()).ToList();
+            double bestPathValue = viterbiPaths.Max(y => y.value);
+            ViterbiPath bestPath = viterbiPaths.First(x => x.value == bestPathValue);
+            bestPath.nodes.Reverse();
+
+            foreach (ViterbiNode node in bestPath.nodes)
+            {
+                circles.Add(new CircularButton());
+                this.Controls.Add(circles.Last());
+
+                switch (node.partOfSpeech)
                 {
-                    circle.BackColor = Color.FromArgb(87, 127, 180);
-                }
-                else if (test == "verb")
-                {
-                    circle.BackColor = Color.FromArgb(0, 194, 203);
-                }
-                else if (test == "adjective")
-                {
-                    circle.BackColor = Color.FromArgb(56, 182, 255);
-                }
-                else if (test == "adverb")
-                {
-                    circle.BackColor = Color.FromArgb(242, 209, 201);
-                }
-                else if (test == "pronoun")
-                {
-                    circle.BackColor = Color.FromArgb(175, 179, 247);
-                }
-                else if (test == "conjunction")
-                {
-                    circle.BackColor = Color.FromArgb(145, 215, 223);
-                }
-                else if (test == "article")
-                {
-                    circle.BackColor = Color.FromArgb(162, 250, 163);
-                }
-                else if (test == "preposition")
-                {
-                    circle.BackColor = Color.FromArgb(188, 217, 121);
-                }
-                else
-                {
-                    circle.BackColor = Color.FromArgb(91, 108, 93);
+                    case "noun":
+                        circles.Last().BackColor = Color.FromArgb(87, 127, 180);
+                        break;
+                    case "verb":
+                        circles.Last().BackColor = Color.FromArgb(0, 194, 203);
+                        break;
+                    case "adjective":
+                        circles.Last().BackColor = Color.FromArgb(56, 182, 255);
+                        break;
+                    case "adverb":
+                        circles.Last().BackColor = Color.FromArgb(242, 209, 201);
+                        break;
+                    case "pronoun":
+                        circles.Last().BackColor = Color.FromArgb(175, 179, 247);
+                        break;
+                    case "conjunction":
+                        circles.Last().BackColor = Color.FromArgb(145, 215, 223);
+                        break;
+                    case "article":
+                        circles.Last().BackColor = Color.FromArgb(162, 250, 163);
+                        break;
+                    case "preposition":
+                        circles.Last().BackColor = Color.FromArgb(188, 217, 121);
+                        break;
+                    default:
+                        circles.Last().BackColor = Color.FromArgb(91, 108, 93);
+                        break;
                 }
 
-                circle.Enabled = false;
-                circle.FlatAppearance.BorderSize = 0;
-                circle.FlatStyle = FlatStyle.Flat;
-                circle.ForeColor = Color.White;
-                circle.Font = new Font("Century Gothic", 12F, FontStyle.Bold, GraphicsUnit.Point, ((byte)(0)));
-                circle.Name = "circularButton1";
-                circle.Size = new Size(400 / testViterbi.Count(), 400 / testViterbi.Count());
-                circle.TabIndex = 10;
-                circle.Text = test;
-                circle.Location = new Point(distanceUnit * leftValue, topValue);
-                distanceUnit += 1;
+                circles.Last().Enabled = false;
+                circles.Last().FlatAppearance.BorderSize = 0;
+                circles.Last().FlatStyle = FlatStyle.Flat;
+                circles.Last().ForeColor = Color.White;
+                circles.Last().Font = new Font("Century Gothic", 12F, FontStyle.Bold, GraphicsUnit.Point, ((byte)(0)));
+                circles.Last().Name = "circularButton1";
+                circles.Last().Size = new Size(circleSize, circleSize);
+                circles.Last().TabIndex = 10;
+                circles.Last().Text = node.partOfSpeech;
+                circles.Last().Location = new Point((int)(distanceUnit * leftValue), topValue);
+                distanceUnit += distancePass;
             }
         }
-        private string HiddenMarkovModel(string word, int position)
+
+        private void ClearCircles()
         {
+            foreach (CircularButton button in circles)
+            {
+                this.Controls.Remove(button);
+            }
+            circles.Clear();
+            distanceUnit = 1;
+        }
+
+        private void ViterbiPathRec(ViterbiPath path, ViterbiNode node, double transitionEdge)
+        {
+            path.value *= (node.probability * transitionEdge);
+            path.nodes.Add(node);
+
+            if (node.lastNodes.Count == 0)
+            {
+                viterbiPaths.Add(path);
+                return;
+            }
+            else
+            {
+                foreach (LastNode lastNode in node.lastNodes)
+                {
+                    ViterbiPathRec(new ViterbiPath(path), lastNode.node, lastNode.transitionEdge);
+                }
+            }
+        }
+        private List<ViterbiNode> HiddenMarkovModel(string word, int position, List<ViterbiNode> prevNodes)
+        {
+            List<ViterbiNode> viterbiNodes = new List<ViterbiNode>();
             int pos;
             int word0;
             int wordn;
@@ -293,23 +340,35 @@ namespace POS_Tagging
                     pos = GetTagPosition(partsOfSpeech[i]);
                     word0 = GetWordPosition(word);
                     currentProbability[i] = ViterbiS0(word0, pos);
+
+                    ViterbiNode viterbiNode = new ViterbiNode(position, partsOfSpeech[i], currentProbability[i]);
+                    viterbiNodes.Add(viterbiNode);
                 }
                 CopyCurrentProbabilityToLastProbability();
                 //Console.WriteLine("Predictie"+word + " " + GetPoSFromCurrentProbability(currentProbability.Max()));
-                return GetPoSFromCurrentProbability(currentProbability.Max());
+
+                //GetPoSFromCurrentProbability(currentProbability.Max());
             }
             else
             {
                 wordn = GetWordPosition(word);
-                for (int j = 0; j < partsOfSpeech.Count; j++)
+                for (int i = 0; i < partsOfSpeech.Count; i++)
                 {
-                    pos = GetTagPosition(partsOfSpeech[j]);
-                    currentProbability[j] = ViterbiSn(wordn, pos);
+                    List<LastNode> lastNodes = new List<LastNode>();
+
+                    pos = GetTagPosition(partsOfSpeech[i]);
+                    currentProbability[i] = ViterbiSn(wordn, pos, lastNodes, prevNodes);
+
+                    ViterbiNode viterbiNode = new ViterbiNode(position, partsOfSpeech[i], currentProbability[i], lastNodes);
+                    viterbiNodes.Add(viterbiNode);
+
                 }
                 CopyCurrentProbabilityToLastProbability();
                 //Console.WriteLine(word + " " + GetPoSFromCurrentProbability(currentProbability.Max()));
-                return GetPoSFromCurrentProbability(currentProbability.Max());
+                // return GetPoSFromCurrentProbability(currentProbability.Max());
+
             }
+            return viterbiNodes;
         }
         private string GetPoSFromCurrentProbability(double probability)
         {
@@ -329,17 +388,14 @@ namespace POS_Tagging
             if (word == -1)
             {
                 //si poz curenta ca substantiv - AICI POATE NU E CHIAR CORECT SI TREBUIA 1/NR TOTAL APP SUB
-                if (posCurrent == 0)
-                    return 1 * initialState[posCurrent];
-                else
-                    return 0 * initialState[posCurrent];
+                return posCurrent == 0 ? initialState[posCurrent] : 0;
             }
             else
             {
                 return emissionMatrix[word, posCurrent] * initialState[posCurrent];
             }
         }
-        private double ViterbiSn(int word, int posCurrent)
+        private double ViterbiSn(int word, int posCurrent, List<LastNode> lastNodes, List<ViterbiNode> prevNodes)
         {
             int posPast;
 
@@ -347,24 +403,18 @@ namespace POS_Tagging
             if (word == -1)
             {
                 //si poz curenta ca substantiv
-                if (posCurrent == 0)
+                if (posCurrent == GetTagPosition("noun"))
                 {
-                    foreach (string pos2 in partsOfSpeech)
+                    for (int i = 0; i < partsOfSpeech.Count; i++)
                     {
-                        posPast = GetTagPosition(pos2);
-
-                        //ca sa nu imi afecteze calculele
-                        transitions[posPast] = 1 * transitionMatrix[posPast, posCurrent];
+                        transitions[i] = 1 * transitionMatrix[i, posCurrent]; // 1 * transitionMatrix[i, posCurrent]
                     }
                 }
                 else
                 {
-                    foreach (string pos2 in partsOfSpeech)
+                    for (int i = 0; i < partsOfSpeech.Count; i++)
                     {
-                        posPast = GetTagPosition(pos2);
-
-                        //ca sa nu imi afecteze calculele
-                        transitions[posPast] = 0 * transitionMatrix[posPast, posCurrent];
+                        transitions[i] = 0; // 0 * transitionMatrix[posPast, posCurrent]
                     }
                 }
             }
@@ -380,6 +430,11 @@ namespace POS_Tagging
             double[] tempProbbility = new double[9];
             for (int i = 0; i < partsOfSpeech.Count; i++)
             {
+                if (transitions[i] != 0)
+                {
+                    lastNodes.Add(new LastNode(partsOfSpeech[i], transitions[i], prevNodes));
+                }
+
                 tempProbbility[i] = pastProbability[i] * transitions[i];
             }
             return tempProbbility.Max();
@@ -391,114 +446,114 @@ namespace POS_Tagging
                 pastProbability[i] = currentProbability[i];
             }
         }
-        private void ReadBrownViterbiTest()
-        {
-            int sumAllWords = 0;
-            string rootPath = @"C:\Users\iulia.severin\source\repos\POS-Tagging\bin\Debug\Brown_Test";
-            var files = Directory.GetFiles(rootPath, "*.*", SearchOption.AllDirectories);
-            string[] wordTagPair;
-            string line;
-            var watch = new System.Diagnostics.Stopwatch();
-            int sumWatch = 0;
-            foreach (string file in files)
-            {
-                using (StreamReader reader = new StreamReader(file))
-                {
-                    while ((line = reader.ReadLine()) != null)
-                    {
-                        wordTagTestArray.Clear();
-                        if (line == "")
-                        {
-                            continue;
-                        }
-                        wordTagPair = line.Split(separators, StringSplitOptions.RemoveEmptyEntries);
+        /*  private void ReadBrownViterbiTest()
+          {
+              int sumAllWords = 0;
+              string rootPath = @"C:\Users\iulia.severin\source\repos\POS-Tagging\bin\Debug\Brown_Test";
+              var files = Directory.GetFiles(rootPath, "*.*", SearchOption.AllDirectories);
+              string[] wordTagPair;
+              string line;
+              var watch = new System.Diagnostics.Stopwatch();
+              int sumWatch = 0;
+              foreach (string file in files)
+              {
+                  using (StreamReader reader = new StreamReader(file))
+                  {
+                      while ((line = reader.ReadLine()) != null)
+                      {
+                          wordTagTestArray.Clear();
+                          if (line == "")
+                          {
+                              continue;
+                          }
+                          wordTagPair = line.Split(separators, StringSplitOptions.RemoveEmptyEntries);
 
-                        for (int i = 0; i < wordTagPair.Length; i++)
-                        {
-                            WordTags wordTagSplit = SplitPair(wordTagPair[i]);
+                          for (int i = 0; i < wordTagPair.Length; i++)
+                          {
+                              WordTags wordTagSplit = SplitPair(wordTagPair[i]);
 
-                            for (int j = 0; j < wordTagSplit.tags.Count; j++)
-                            {
-                                wordTagSplit.tags[j] = GetPartOfSpeech(wordTagSplit.tags[j]);
-                            }
+                              for (int j = 0; j < wordTagSplit.tags.Count; j++)
+                              {
+                                  wordTagSplit.tags[j] = GetPartOfSpeech(wordTagSplit.tags[j]);
+                              }
 
-                            if (wordTagSplit.tags.Count == 0)
-                            {
-                                continue;
-                            }
+                              if (wordTagSplit.tags.Count == 0)
+                              {
+                                  continue;
+                              }
 
-                            wordTagSplit.tags = wordTagSplit.tags.Distinct().ToList();
-                            RemoveOtherTag(wordTagSplit);
-                            AddWordTagTestArray(wordTagSplit);
-                        }
-                        //-------------------------------
+                              wordTagSplit.tags = wordTagSplit.tags.Distinct().ToList();
+                              RemoveOtherTag(wordTagSplit);
+                              AddWordTagTestArray(wordTagSplit);
+                          }
+                          //-------------------------------
 
 
-                        watch.Start();
-                        for (int j = 0; j < wordTagTestArray.Count(); j++)
-                        {
-                            string predictedTag = HiddenMarkovModel(wordTagTestArray[j].word, j);
+                          watch.Start();
+                          for (int j = 0; j < wordTagTestArray.Count(); j++)
+                          {
+                              string predictedTag = HiddenMarkovModel(wordTagTestArray[j].word, j);
 
-                            predictionArray.Add(wordTagTestArray[j].word + " " + predictedTag);
-                            Console.WriteLine("Predictie {0}: {1}", wordTagTestArray[j].word, predictedTag);
-                            Console.WriteLine("Tag din fisier {0}: {1}", wordTagTestArray[j].word, wordTagTestArray[j].tags[0]);
+                              predictionArray.Add(wordTagTestArray[j].word + " " + predictedTag);
+                              Console.WriteLine("Predictie {0}: {1}", wordTagTestArray[j].word, predictedTag);
+                              Console.WriteLine("Tag din fisier {0}: {1}", wordTagTestArray[j].word, wordTagTestArray[j].tags[0]);
 
-                            for (int i = 0; i < partsOfSpeech.Count; i++)
-                            {
-                                if (wordTagTestArray[j].tags.Contains(partsOfSpeech[i]))
-                                {
-                                    if (predictedTag.Equals(partsOfSpeech[i]))
-                                    {
-                                        contorTP[i]++;
-                                    }
-                                    else
-                                    {
-                                        contorFN[i]++;
-                                    }
-                                }
-                                else
-                                {
-                                    if (predictedTag.Equals(partsOfSpeech[i]))
-                                    {
-                                        contorFP[i]++;
-                                    }
-                                    else
-                                    {
-                                        contorTN[i]++;
-                                    }
-                                }
-                            }
-                        }
-                        watch.Stop();
+                              for (int i = 0; i < partsOfSpeech.Count; i++)
+                              {
+                                  if (wordTagTestArray[j].tags.Contains(partsOfSpeech[i]))
+                                  {
+                                      if (predictedTag.Equals(partsOfSpeech[i]))
+                                      {
+                                          contorTP[i]++;
+                                      }
+                                      else
+                                      {
+                                          contorFN[i]++;
+                                      }
+                                  }
+                                  else
+                                  {
+                                      if (predictedTag.Equals(partsOfSpeech[i]))
+                                      {
+                                          contorFP[i]++;
+                                      }
+                                      else
+                                      {
+                                          contorTN[i]++;
+                                      }
+                                  }
+                              }
+                          }
+                          watch.Stop();
 
-                        Console.WriteLine($"Execution Time: {watch.ElapsedMilliseconds} ms");
-                        sumAllWords += wordTagTestArray.Count();
-                    }
-                }
-            }
-            Console.WriteLine("Numarul total de cuvinte Viterbi Test:" + sumAllWords);
+                          Console.WriteLine($"Execution Time: {watch.ElapsedMilliseconds} ms");
+                          sumAllWords += wordTagTestArray.Count();
+                      }
+                  }
+              }
+              Console.WriteLine("Numarul total de cuvinte Viterbi Test:" + sumAllWords);
 
-            listPredictie.Items.Clear();
-            foreach (string prediction in predictionArray)
-            {
-                var row = new string[] { prediction };
-                var lvi = new ListViewItem(row);
-                lvi.Tag = prediction;
-                listPredictie.Items.Add(lvi);
-            }
-            listPredictie.Show();
+              listPredictie.Items.Clear();
+              foreach (string prediction in predictionArray)
+              {
+                  var row = new string[] { prediction };
+                  var lvi = new ListViewItem(row);
+                  lvi.Tag = prediction;
+                  listPredictie.Items.Add(lvi);
+              }
+              listPredictie.Show();
 
-            WritePredictionStatistics(sumAllWords);
+              WritePredictionStatistics(sumAllWords);
 
-            for (int i = 0; i < partsOfSpeech.Count; i++)
-            {
-                Console.WriteLine("Total True Positive {0}: {1} ", partsOfSpeech[i], contorTP[i].ToString());
-                Console.WriteLine("Total False Negative {0}: {1} ", partsOfSpeech[i], contorFN[i].ToString());
-                Console.WriteLine("Total False Positive {0}: {1} ", partsOfSpeech[i], contorFP[i].ToString());
-                Console.WriteLine("Total True Negative {0}: {1} ", partsOfSpeech[i], contorTN[i].ToString());
-                Console.WriteLine("SUMA {0}: {1} ", partsOfSpeech[i], (contorTN[i] + contorTP[i] + contorFN[i] + contorFP[i]).ToString());
-            }
-        }
+              for (int i = 0; i < partsOfSpeech.Count; i++)
+              {
+                  Console.WriteLine("Total True Positive {0}: {1} ", partsOfSpeech[i], contorTP[i].ToString());
+                  Console.WriteLine("Total False Negative {0}: {1} ", partsOfSpeech[i], contorFN[i].ToString());
+                  Console.WriteLine("Total False Positive {0}: {1} ", partsOfSpeech[i], contorFP[i].ToString());
+                  Console.WriteLine("Total True Negative {0}: {1} ", partsOfSpeech[i], contorTN[i].ToString());
+                  Console.WriteLine("SUMA {0}: {1} ", partsOfSpeech[i], (contorTN[i] + contorTP[i] + contorFN[i] + contorFP[i]).ToString());
+              }
+          }*/
         private void ReadBrownTest()
         {
             string rootPath = @"C:\Users\iulia.severin\source\repos\POS-Tagging\bin\Debug\Brown_Test";
