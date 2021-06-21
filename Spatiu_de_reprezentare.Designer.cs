@@ -30,9 +30,9 @@ namespace POS_Tagging
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Spatiu_de_reprezentare));
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea4 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Legend legend4 = new System.Windows.Forms.DataVisualization.Charting.Legend();
-            System.Windows.Forms.DataVisualization.Charting.Series series4 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea2 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend2 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Series series2 = new System.Windows.Forms.DataVisualization.Charting.Series();
             this.btnReadCorpus = new System.Windows.Forms.Button();
             this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.loadMatrixFile = new System.Windows.Forms.Button();
@@ -57,6 +57,7 @@ namespace POS_Tagging
             this.Cuvant = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.textBoxSentence = new System.Windows.Forms.TextBox();
             this.panel5 = new System.Windows.Forms.Panel();
+            this.btnExit = new System.Windows.Forms.Button();
             this.panel1.SuspendLayout();
             this.panel3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -250,10 +251,11 @@ namespace POS_Tagging
             // 
             // pictureBox1
             // 
+            this.pictureBox1.BackColor = System.Drawing.Color.White;
             this.pictureBox1.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox1.Image")));
             this.pictureBox1.Location = new System.Drawing.Point(1, 0);
             this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(183, 58);
+            this.pictureBox1.Size = new System.Drawing.Size(185, 58);
             this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
             this.pictureBox1.TabIndex = 0;
             this.pictureBox1.TabStop = false;
@@ -269,18 +271,18 @@ namespace POS_Tagging
             // chartAcuratete
             // 
             this.chartAcuratete.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(216)))), ((int)(((byte)(238)))), ((int)(((byte)(239)))));
-            chartArea4.Name = "ChartArea1";
-            this.chartAcuratete.ChartAreas.Add(chartArea4);
-            legend4.Name = "Legend1";
-            this.chartAcuratete.Legends.Add(legend4);
+            chartArea2.Name = "ChartArea1";
+            this.chartAcuratete.ChartAreas.Add(chartArea2);
+            legend2.Name = "Legend1";
+            this.chartAcuratete.Legends.Add(legend2);
             this.chartAcuratete.Location = new System.Drawing.Point(3, 1);
             this.chartAcuratete.Name = "chartAcuratete";
             this.chartAcuratete.Palette = System.Windows.Forms.DataVisualization.Charting.ChartColorPalette.Pastel;
-            series4.ChartArea = "ChartArea1";
-            series4.Legend = "Legend1";
-            series4.Name = "Acuratetea de predictie";
-            series4.YValuesPerPoint = 6;
-            this.chartAcuratete.Series.Add(series4);
+            series2.ChartArea = "ChartArea1";
+            series2.Legend = "Legend1";
+            series2.Name = "Acuratetea de predictie";
+            series2.YValuesPerPoint = 6;
+            this.chartAcuratete.Series.Add(series2);
             this.chartAcuratete.Size = new System.Drawing.Size(627, 248);
             this.chartAcuratete.TabIndex = 10;
             // 
@@ -351,11 +353,29 @@ namespace POS_Tagging
             this.panel5.Size = new System.Drawing.Size(761, 10);
             this.panel5.TabIndex = 12;
             // 
+            // btnExit
+            // 
+            this.btnExit.FlatAppearance.BorderSize = 0;
+            this.btnExit.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnExit.Font = new System.Drawing.Font("Century Gothic", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnExit.ForeColor = System.Drawing.Color.DarkSlateGray;
+            this.btnExit.Image = ((System.Drawing.Image)(resources.GetObject("btnExit.Image")));
+            this.btnExit.Location = new System.Drawing.Point(1076, 0);
+            this.btnExit.Margin = new System.Windows.Forms.Padding(2);
+            this.btnExit.Name = "btnExit";
+            this.btnExit.Size = new System.Drawing.Size(56, 55);
+            this.btnExit.TabIndex = 14;
+            this.btnExit.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
+            this.btnExit.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+            this.btnExit.UseVisualStyleBackColor = true;
+            this.btnExit.Click += new System.EventHandler(this.btnExit_Click);
+            // 
             // Spatiu_de_reprezentare
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(216)))), ((int)(((byte)(238)))), ((int)(((byte)(239)))));
             this.ClientSize = new System.Drawing.Size(1135, 551);
+            this.Controls.Add(this.btnExit);
             this.Controls.Add(this.panel5);
             this.Controls.Add(this.textBoxSentence);
             this.Controls.Add(this.listPredictie);
@@ -408,6 +428,7 @@ namespace POS_Tagging
         private System.Windows.Forms.ColumnHeader Cuvant;
         private System.Windows.Forms.TextBox textBoxSentence;
         private System.Windows.Forms.Panel panel5;
+        private System.Windows.Forms.Button btnExit;
     }
 }
 

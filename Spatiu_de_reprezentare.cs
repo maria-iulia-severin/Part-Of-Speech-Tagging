@@ -55,7 +55,6 @@ namespace POS_Tagging
         double[] pastProbability = new double[9];
         double[] transitions = new double[9];
 
-        //string[] testViterbi = { "Will", "can", "spot", "Mary"};
         string[] testViterbi;
         int distanceUnit = 1;
         private void btnStatistici_Click(object sender, EventArgs e)
@@ -68,14 +67,14 @@ namespace POS_Tagging
             chartAcuratete.Series["Acuratetea de predictie"].Points.AddXY("Frecventa", 0.96);
             chartAcuratete.Show();
 
-
-
         }
         private void btnReadCorpus_Click(object sender, EventArgs e)
         {
+            msg m = new msg();
             panelLeft.Height = btnReadCorpus.Height;
             panelLeft.Top = btnReadCorpus.Top;
             ReadCorpus();
+            m.Show();
         }
         private void loadMatrixFile_Click(object sender, EventArgs e)
         {
@@ -149,8 +148,9 @@ namespace POS_Tagging
 
             if (selectAlgoritm.SelectedItem == "Predictor Frecvente")
             {
+                var watch = new System.Diagnostics.Stopwatch();
                 ReadBrownTest();
-
+                watch.Start();
                 foreach (WordTags wordTag in wordTagTestArray)
                 {
                     predictedTag = Predict(wordTag.word);
@@ -185,6 +185,8 @@ namespace POS_Tagging
                         }
                     }
                 }
+                watch.Stop();
+                Console.WriteLine($"Execution Time: {watch.ElapsedMilliseconds} ms");
 
                 listPredictie.Items.Clear();
                 foreach (string prediction in predictionArray)
@@ -289,7 +291,7 @@ namespace POS_Tagging
                 circle.ForeColor = Color.White;
                 circle.Font = new Font("Century Gothic", 12F, FontStyle.Bold, GraphicsUnit.Point, ((byte)(0)));
                 circle.Name = "circularButton1";
-                circle.Size = new Size(124, 116);
+                circle.Size = new Size(600 / testViterbi.Count(), 600 / testViterbi.Count());
                 circle.TabIndex = 10;
                 circle.Text = test;
                 circle.Location = new System.Drawing.Point(leftValue, topValue);
@@ -413,7 +415,8 @@ namespace POS_Tagging
             var files = Directory.GetFiles(rootPath, "*.*", SearchOption.AllDirectories);
             string[] wordTagPair;
             string line;
-
+            var watch = new System.Diagnostics.Stopwatch();
+            int sumWatch = 0;
             foreach (string file in files)
             {
                 using (StreamReader reader = new StreamReader(file))
@@ -446,6 +449,9 @@ namespace POS_Tagging
                             AddWordTagTestArray(wordTagSplit);
                         }
                         //-------------------------------
+
+
+                        watch.Start();
                         for (int j = 0; j < wordTagTestArray.Count(); j++)
                         {
                             string predictedTag = HiddenMarkovModel(wordTagTestArray[j].word, j);
@@ -480,6 +486,9 @@ namespace POS_Tagging
                                 }
                             }
                         }
+                        watch.Stop();
+
+                        Console.WriteLine($"Execution Time: {watch.ElapsedMilliseconds} ms");
                         sumAllWords += wordTagTestArray.Count();
                     }
                 }
@@ -1098,7 +1107,7 @@ namespace POS_Tagging
             string fileName;
             if (selectAlgoritm.SelectedItem == "Predictor Frecvente")
             {
-                //string fileName = "Noun-Prediction-Statistics" +
+                //fileName = "Noun-Prediction-Statistics" +
                 fileName = "Frequence-Prediction-Statistics" +
                             DateTime.Now.Day + "D" +
                             DateTime.Now.Month + "M" +
@@ -1298,6 +1307,10 @@ namespace POS_Tagging
                     emissionMatrix[i, j] = Convert.ToDouble(lineSplit[j]);
                 }
             }
+        }
+        private void btnExit_Click(object sender, EventArgs e)
+        {
+            Application.Exit();
         }
     }
 }
