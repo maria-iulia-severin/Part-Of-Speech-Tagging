@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="POS_Tagging.LastNode">
+    <Position X="7" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AQAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>LastNode.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="POS_Tagging.ViterbiNode">
+    <Position X="2" Y="0.5" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAIAAgAAAAAAAAAAAAAIAAAAAABAAAAA=</HashCode>
+      <FileName>ViterbiNode.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="POS_Tagging.ViterbiPath">
+    <Position X="4.5" Y="0.5" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAIAA=</HashCode>
+      <FileName>ViterbiPath.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

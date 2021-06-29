@@ -185,6 +185,7 @@ namespace POS_Tagging
             this.selectAlgoritm.Size = new System.Drawing.Size(168, 31);
             this.selectAlgoritm.TabIndex = 13;
             this.selectAlgoritm.Tag = "";
+            this.selectAlgoritm.Text = "Algoritmul Viterbi";
             // 
             // btnStatistici
             // 

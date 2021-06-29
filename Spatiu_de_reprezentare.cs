@@ -12,7 +12,7 @@ namespace POS_Tagging
         string[] noun = { "nn", "nns", "np", "nps", "nrs" };
         string[] verb = { "be", "bed", "bedz", "beg", "bem", "ben", "ber", "bez", "do", "dod", "doz", "hv", "hvd", "hvg", "hvn", "hvz", "md", "vb", "vbd", "vbg", "vbn", "vbz" };
         string[] adjective = { "jj", "jjr", "jjs", "jjt" };
-        string[] adverb = { "rb", "rbr", "rbt", "rn", "rp", "wrb", "nr" };
+        string[] adverb = {"rb", "rbr", "rbt", "rn", "rp", "wrb", "nr" };
         string[] pronoun = { "pn", "pp", "ppl", "ppls", "ppo", "pps", "ppss", "wp", "wpo", "wps" };
         string[] conjunction = { "cs", "cc" };
         string[] article = { "at" };
@@ -28,6 +28,8 @@ namespace POS_Tagging
         List<WordTags> wordTagViterbiArray = new List<WordTags>();
 
         private List<ViterbiPath> viterbiPaths = new List<ViterbiPath>();
+
+        const int PHRASE_LENGHT = 10;
 
         int[] contorTP = new int[9];
         int[] contorTN = new int[9];
@@ -221,7 +223,6 @@ namespace POS_Tagging
             }
         }
         List<List<ViterbiNode>> viterbiList = new List<List<ViterbiNode>>();
-
         private void btn_Viterbi_Click(object sender, EventArgs e)
         {
 
@@ -229,7 +230,6 @@ namespace POS_Tagging
             panelLeft.Top = btn_Viterbi.Top;
 
             ClearCircles();
-
 
             string viterbiSentence = textBoxSentence.Text;
             testViterbi = viterbiSentence.Split(viterbiSeparators, StringSplitOptions.RemoveEmptyEntries);
@@ -307,7 +307,6 @@ namespace POS_Tagging
                 distanceUnit += distancePass;
             }
         }
-
         private void ClearCircles()
         {
             foreach (CircularButton button in circles)
@@ -317,7 +316,6 @@ namespace POS_Tagging
             circles.Clear();
             distanceUnit = 1;
         }
-
         private void ViterbiPathRec(ViterbiPath path, ViterbiNode node, double transitionEdge)
         {
             //Console.WriteLine(node.probability * transitionEdge);
@@ -346,14 +344,13 @@ namespace POS_Tagging
                 }
             }
         }
-        private List<ViterbiNode> HiddenMarkovModel(string word, int position, List<ViterbiNode> prevNodes)
+        private List<ViterbiNode> HiddenMarkovModel(string word, int wordPositionInPhrase, List<ViterbiNode> prevNodes)
         {
-
             List<ViterbiNode> viterbiNodes = new List<ViterbiNode>();
             int pos;
             int word0;
             int wordn;
-            if (position == 0)
+            if (wordPositionInPhrase == 0)
             {
                 for (int i = 0; i < tagTrainArray.Count; i++)
                 {
@@ -361,13 +358,11 @@ namespace POS_Tagging
                     word0 = GetWordPosition(word);
                     currentProbability[i] = ViterbiS0(word0, pos);
 
-                    ViterbiNode viterbiNode = new ViterbiNode(position, tagTrainArray[i], currentProbability[i]);
+                    ViterbiNode viterbiNode = new ViterbiNode(wordPositionInPhrase, tagTrainArray[i], currentProbability[i]);
                     viterbiNodes.Add(viterbiNode);
                 }
-                CopyCurrentProbabilityToLastProbability();
-                //Console.WriteLine("Predictie"+word + " " + GetPoSFromCurrentProbability(currentProbability.Max()));
 
-                //GetPoSFromCurrentProbability(currentProbability.Max());
+                CopyCurrentProbabilityToLastProbability();
             }
             else
             {
@@ -379,14 +374,12 @@ namespace POS_Tagging
                     pos = GetTagPosition(tagTrainArray[i]);
                     currentProbability[i] = ViterbiSn(wordn, pos, lastNodes, prevNodes);
 
-                    ViterbiNode viterbiNode = new ViterbiNode(position, tagTrainArray[i], currentProbability[i], lastNodes);
+                    ViterbiNode viterbiNode = new ViterbiNode(wordPositionInPhrase, tagTrainArray[i], currentProbability[i], lastNodes);
                     viterbiNodes.Add(viterbiNode);
 
                 }
-                CopyCurrentProbabilityToLastProbability();
-                //Console.WriteLine(word + " " + GetPoSFromCurrentProbability(currentProbability.Max()));
-                // return GetPoSFromCurrentProbability(currentProbability.Max());
 
+                CopyCurrentProbabilityToLastProbability();
             }
             return viterbiNodes;
         }
@@ -459,7 +452,7 @@ namespace POS_Tagging
             string rootPath = @"C:\Users\iulia.severin\source\repos\POS-Tagging\bin\Debug\Brown_Test";
             var files = Directory.GetFiles(rootPath, "*.*", SearchOption.AllDirectories);
             string[] wordTagPair;
-            string[] phraseSplit;
+            //string[] line;
             string line;
             var watch = new System.Diagnostics.Stopwatch();
 
@@ -475,20 +468,19 @@ namespace POS_Tagging
                             continue;
                         }
 
-                        phraseSplit = line.Split(phraseSeparators, StringSplitOptions.RemoveEmptyEntries);
+                        //line = line.Split(phraseSeparators, StringSplitOptions.RemoveEmptyEntries);
 
-                        for (int k = 0; k < phraseSplit.Count(); k++)
-                        {
+                       // for (int k = 0; k < line.Count(); k++)
+                       // {
+                            wordTagPair = line.Split(separators, StringSplitOptions.RemoveEmptyEntries);
 
-                            wordTagPair = phraseSplit[k].Split(separators, StringSplitOptions.RemoveEmptyEntries);
-
-                            for (int m = 0; m < wordTagPair.Length / 10; m++)
+                           
+                            for (int m = 0; m <= wordTagPair.Length / PHRASE_LENGHT; m++)
                             {
-
                                 wordTagTestArray.Clear();
-                                for (int i = 0; i < 10 && (m * 10 + i < wordTagPair.Length); i++)
+                                for (int i = 0; i < PHRASE_LENGHT && (m * PHRASE_LENGHT + i < wordTagPair.Length); i++)
                                 {
-                                    WordTags wordTagSplit = SplitPair(wordTagPair[m * 10 + i]);
+                                    WordTags wordTagSplit = SplitPair(wordTagPair[m * PHRASE_LENGHT + i]);
 
                                     for (int j = 0; j < wordTagSplit.tags.Count; j++)
                                     {
@@ -573,7 +565,7 @@ namespace POS_Tagging
                                 }
 
                                 sumAllWords += wordTagTestArray.Count();
-                            }
+                          //  }
                         }
                     }
                 }
