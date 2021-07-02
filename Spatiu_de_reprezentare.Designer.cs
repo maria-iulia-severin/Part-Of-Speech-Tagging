@@ -179,7 +179,8 @@ namespace POS_Tagging
             this.selectAlgoritm.FormattingEnabled = true;
             this.selectAlgoritm.Items.AddRange(new object[] {
             "Algoritmul Viterbi",
-            "Predictor Frecvente"});
+            "Predictor Frecvente",
+            "Predictia Statica"});
             this.selectAlgoritm.Location = new System.Drawing.Point(8, 170);
             this.selectAlgoritm.Name = "selectAlgoritm";
             this.selectAlgoritm.Size = new System.Drawing.Size(168, 31);
@@ -264,9 +265,9 @@ namespace POS_Tagging
             // panel2
             // 
             this.panel2.Controls.Add(this.chartAcuratete);
-            this.panel2.Location = new System.Drawing.Point(502, 299);
+            this.panel2.Location = new System.Drawing.Point(726, 299);
             this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(633, 252);
+            this.panel2.Size = new System.Drawing.Size(409, 252);
             this.panel2.TabIndex = 5;
             // 
             // chartAcuratete
@@ -276,7 +277,7 @@ namespace POS_Tagging
             this.chartAcuratete.ChartAreas.Add(chartArea1);
             legend1.Name = "Legend1";
             this.chartAcuratete.Legends.Add(legend1);
-            this.chartAcuratete.Location = new System.Drawing.Point(3, 1);
+            this.chartAcuratete.Location = new System.Drawing.Point(3, 3);
             this.chartAcuratete.Name = "chartAcuratete";
             this.chartAcuratete.Palette = System.Windows.Forms.DataVisualization.Charting.ChartColorPalette.Pastel;
             series1.ChartArea = "ChartArea1";
@@ -284,7 +285,7 @@ namespace POS_Tagging
             series1.Name = "Acuratetea de predictie";
             series1.YValuesPerPoint = 6;
             this.chartAcuratete.Series.Add(series1);
-            this.chartAcuratete.Size = new System.Drawing.Size(627, 248);
+            this.chartAcuratete.Size = new System.Drawing.Size(403, 246);
             this.chartAcuratete.TabIndex = 10;
             // 
             // panelLeft
@@ -345,7 +346,6 @@ namespace POS_Tagging
             this.textBoxSentence.Name = "textBoxSentence";
             this.textBoxSentence.Size = new System.Drawing.Size(761, 25);
             this.textBoxSentence.TabIndex = 11;
-            this.textBoxSentence.Text = "Will can spot Mary";
             // 
             // panel5
             // 

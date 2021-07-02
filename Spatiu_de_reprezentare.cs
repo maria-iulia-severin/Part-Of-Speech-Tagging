@@ -42,7 +42,7 @@ namespace POS_Tagging
 
         int numberOfWordsInPhrase;
         int countTotalWordsTrain = 0;
-        int countTotalNumberOfTagsInTrain = 0; // numar total etichetari pt a dat 1 pe linie
+        int countTotalNumberOfTagsInTrain = 0;
 
         char[] separators = new char[] { ' ', '\r', '\n', '\t' };
         string[] phraseSeparators = new string[] { ",/,-hl", "./.-hl", "!/.-hl", "?/.-hl", ";/.-hl", ",/,", "./.", "!/.", "?/.", ";/." };
@@ -68,12 +68,10 @@ namespace POS_Tagging
         {
             panelLeft.Height = btnStatistici.Height;
             panelLeft.Top = btnStatistici.Top;
-
-
-            chartAcuratete.Series["Acuratetea de predictie"].Points.AddXY("Viterbi", 0.99);
-            chartAcuratete.Series["Acuratetea de predictie"].Points.AddXY("Frecventa", 0.96);
+            chartAcuratete.Series["Acuratetea de predictie"].Points.AddXY("Predictia Statica", 0.26);
+            chartAcuratete.Series["Acuratetea de predictie"].Points.AddXY("Cea mai frecventa", 0.93);
+            chartAcuratete.Series["Acuratetea de predictie"].Points.AddXY("Algoritmul Viterbi", 0.94);
             chartAcuratete.Show();
-
         }
         private void btnReadCorpus_Click(object sender, EventArgs e)
         {
@@ -160,8 +158,8 @@ namespace POS_Tagging
                 watch.Start();
                 foreach (WordTags wordTag in wordTagTestArray)
                 {
-                    predictedTag = Predict(wordTag.word);
-                    //predictedTag = PredictNoun(wordTag.word);
+                    //predictedTag = Predict(wordTag.word);
+                    predictedTag = PredictNoun(wordTag.word);
 
                     predictionArray.Add(wordTag.word + " " + predictedTag);
                     Console.WriteLine("{0}: {1}", wordTag.word, predictedTag);
@@ -236,7 +234,8 @@ namespace POS_Tagging
 
             int topValue = 145;
             int leftValue = 200;
-            double distancePass = 5 / testViterbi.Count();
+           //double distancePass = 7 / testViterbi.Count();
+            double distancePass = 0.75;
             int circleSize = 450 / testViterbi.Count();
 
             viterbiList.Clear();
@@ -252,6 +251,14 @@ namespace POS_Tagging
             {
                 ViterbiPathRec(new ViterbiPath(), lastNodeFromPhrase, 1);
             }
+
+           //Am folosit o functie recursiva cu care parcurg toate caile posibile
+           //pornind de la nodurile ultimului cuvant din propozitie.
+           //De exemplu din N merge pe A si face inmultirea
+           //apoi apeleaza din nou functia si mai departe din A
+           //merge in V si face inmultirea si tot asa.
+           //Probabilitatea caii este transmisa ca parametru
+           //cand ajunge la nodurile primului cuvant, adauga calea intr-o lista (am si probabilitatea)
 
             viterbiPaths = viterbiPaths.Where(p => p.nodes.Count == testViterbi.Count()).ToList();
             double bestPathValue = viterbiPaths.Max(y => y.value);
@@ -347,16 +354,16 @@ namespace POS_Tagging
         private List<ViterbiNode> HiddenMarkovModel(string word, int wordPositionInPhrase, List<ViterbiNode> prevNodes)
         {
             List<ViterbiNode> viterbiNodes = new List<ViterbiNode>();
-            int pos;
+            int PoS;
             int word0;
             int wordn;
             if (wordPositionInPhrase == 0)
             {
                 for (int i = 0; i < tagTrainArray.Count; i++)
                 {
-                    pos = GetTagPosition(tagTrainArray[i]);
+                    PoS = GetTagPosition(tagTrainArray[i]);
                     word0 = GetWordPosition(word);
-                    currentProbability[i] = ViterbiS0(word0, pos);
+                    currentProbability[i] = ViterbiS0(word0, PoS);
 
                     ViterbiNode viterbiNode = new ViterbiNode(wordPositionInPhrase, tagTrainArray[i], currentProbability[i]);
                     viterbiNodes.Add(viterbiNode);
@@ -371,8 +378,8 @@ namespace POS_Tagging
                 {
                     List<LastNode> lastNodes = new List<LastNode>();
 
-                    pos = GetTagPosition(tagTrainArray[i]);
-                    currentProbability[i] = ViterbiSn(wordn, pos, lastNodes, prevNodes);
+                    PoS = GetTagPosition(tagTrainArray[i]);
+                    currentProbability[i] = ViterbiSn(wordn, PoS, lastNodes, prevNodes);
 
                     ViterbiNode viterbiNode = new ViterbiNode(wordPositionInPhrase, tagTrainArray[i], currentProbability[i], lastNodes);
                     viterbiNodes.Add(viterbiNode);
@@ -383,19 +390,19 @@ namespace POS_Tagging
             }
             return viterbiNodes;
         }
-        private double ViterbiS0(int word, int posCurrent)
+        private double ViterbiS0(int word, int PartofSpeechCurrent)
         {
             if (word == -1)
             {
                 //si poz curenta ca substantiv - AICI POATE NU E CHIAR CORECT SI TREBUIA 1/NR TOTAL APP SUB
-                return posCurrent == 0 ? initialState[posCurrent] : 0;
+                return PartofSpeechCurrent == 0 ? initialState[PartofSpeechCurrent] : 0;
             }
             else
             {
-                return emissionMatrix[word, posCurrent] * initialState[posCurrent];
+                return emissionMatrix[word, PartofSpeechCurrent] * initialState[PartofSpeechCurrent];
             }
         }
-        private double ViterbiSn(int word, int posCurrent, List<LastNode> lastNodes, List<ViterbiNode> prevNodes)
+        private double ViterbiSn(int word, int PartofSpeechCurrent, List<LastNode> lastNodes, List<ViterbiNode> prevNodes)
         {
             int posPast;
             prevNodes = prevNodes.Where(x => x.probability > 0).ToList();
@@ -403,11 +410,11 @@ namespace POS_Tagging
             if (word == -1)
             {
                 //si poz curenta ca substantiv
-                if (posCurrent == GetTagPosition("noun"))
+                if (PartofSpeechCurrent == GetTagPosition("noun"))
                 {
                     for (int i = 0; i < tagTrainArray.Count; i++)
                     {
-                        transitions[i] = 1 * transitionMatrix[i, posCurrent]; // 1 * transitionMatrix[i, posCurrent]
+                        transitions[i] = 1 * transitionMatrix[i, PartofSpeechCurrent]; // 1 * transitionMatrix[i, posCurrent]
                     }
                 }
                 else
@@ -420,10 +427,10 @@ namespace POS_Tagging
             }
             else
             {
-                foreach (string pos2 in tagTrainArray)
+                foreach (string PoS2 in tagTrainArray)
                 {
-                    posPast = GetTagPosition(pos2);
-                    transitions[posPast] = emissionMatrix[word, posCurrent] * transitionMatrix[posPast, posCurrent];
+                    posPast = GetTagPosition(PoS2);
+                    transitions[posPast] = emissionMatrix[word, PartofSpeechCurrent] * transitionMatrix[posPast, PartofSpeechCurrent];
                 }
             }
 
@@ -473,7 +480,6 @@ namespace POS_Tagging
                        // for (int k = 0; k < line.Count(); k++)
                        // {
                             wordTagPair = line.Split(separators, StringSplitOptions.RemoveEmptyEntries);
-
                            
                             for (int m = 0; m <= wordTagPair.Length / PHRASE_LENGHT; m++)
                             {
@@ -720,8 +726,8 @@ namespace POS_Tagging
         }
         private void ReadCorpus()
         {
-            //string rootPath = @"C:\Users\iulia.severin\source\repos\POS-Tagging\bin\Debug\Brown";
-            string rootPath = @"C:\Users\iulia.severin\source\repos\POS-Tagging\bin\Debug\Brown_Train";
+            string rootPath = @"C:\Users\iulia.severin\source\repos\POS-Tagging\bin\Debug\Brown";
+            //string rootPath = @"C:\Users\iulia.severin\source\repos\POS-Tagging\bin\Debug\Brown_Train";
             //string rootPath = @"C:\Users\iulia.severin\source\repos\POS-Tagging\bin\Debug\Brown_Test";
             var files = Directory.GetFiles(rootPath, "*.*", SearchOption.AllDirectories);
             string[] wordTagPair;
