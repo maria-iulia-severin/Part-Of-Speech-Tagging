@@ -5,6 +5,14 @@ using System.Windows.Forms;
 using System.Linq;
 using System.Drawing;
 
+//A round table. (round - adjectiv)
+//Come round the corner. (round - adverb)
+//A round of drinks. (round - substantiv)
+//Iulia likes a/the watch (watch - noun)
+//The fans watch the race (watch - verb)
+//Late in summer. (late - adverb)
+//I was late. (late - adjectiv)
+
 namespace POS_Tagging
 {
     public partial class Spatiu_de_reprezentare : Form
@@ -116,34 +124,6 @@ namespace POS_Tagging
                 }
             }
             m.Show();
-
-            /* for (int i = 0; i < tagTrainArray.Count; i++)
-             {
-
-                 Console.WriteLine(initialState[i] + " ");
-             }
-
-             Console.WriteLine();
-             Console.WriteLine("Matricea de Transitie");
-             for (int i = 0; i < tagTrainArray.Count; i++)
-             {
-                 for (int j = 0; j < tagTrainArray.Count; j++)
-                 {
-                     Console.Write(transitionMatrix[i, j] + " ");
-                 }
-                 Console.WriteLine();
-             }
-
-             Console.WriteLine();
-             Console.WriteLine("Matricea de eimisie");
-             for (int i = 0; i < wordTrainArray.Count; i++)
-             {
-                 for (int j = 0; j < tagTrainArray.Count; j++)
-                 {
-                     Console.Write(emissionMatrix[i, j] + " ");
-                 }
-                 Console.WriteLine();
-             }*/
         }
         private void btnPredict_Click(object sender, EventArgs e)
         {
@@ -158,8 +138,8 @@ namespace POS_Tagging
                 watch.Start();
                 foreach (WordTags wordTag in wordTagTestArray)
                 {
-                    //predictedTag = Predict(wordTag.word);
-                    predictedTag = PredictNoun(wordTag.word);
+                    predictedTag = Predict(wordTag.word);
+                    //predictedTag = PredictNoun(wordTag.word);
 
                     predictionArray.Add(wordTag.word + " " + predictedTag);
                     Console.WriteLine("{0}: {1}", wordTag.word, predictedTag);
@@ -223,7 +203,6 @@ namespace POS_Tagging
         List<List<ViterbiNode>> viterbiList = new List<List<ViterbiNode>>();
         private void btn_Viterbi_Click(object sender, EventArgs e)
         {
-
             panelLeft.Height = btn_Viterbi.Height;
             panelLeft.Top = btn_Viterbi.Top;
 
@@ -251,14 +230,6 @@ namespace POS_Tagging
             {
                 ViterbiPathRec(new ViterbiPath(), lastNodeFromPhrase, 1);
             }
-
-           //Am folosit o functie recursiva cu care parcurg toate caile posibile
-           //pornind de la nodurile ultimului cuvant din propozitie.
-           //De exemplu din N merge pe A si face inmultirea
-           //apoi apeleaza din nou functia si mai departe din A
-           //merge in V si face inmultirea si tot asa.
-           //Probabilitatea caii este transmisa ca parametru
-           //cand ajunge la nodurile primului cuvant, adauga calea intr-o lista (am si probabilitatea)
 
             viterbiPaths = viterbiPaths.Where(p => p.nodes.Count == testViterbi.Count()).ToList();
             double bestPathValue = viterbiPaths.Max(y => y.value);
@@ -383,7 +354,6 @@ namespace POS_Tagging
 
                     ViterbiNode viterbiNode = new ViterbiNode(wordPositionInPhrase, tagTrainArray[i], currentProbability[i], lastNodes);
                     viterbiNodes.Add(viterbiNode);
-
                 }
 
                 CopyCurrentProbabilityToLastProbability();
@@ -394,7 +364,7 @@ namespace POS_Tagging
         {
             if (word == -1)
             {
-                //si poz curenta ca substantiv - AICI POATE NU E CHIAR CORECT SI TREBUIA 1/NR TOTAL APP SUB
+                //atunci cand cuvantul nu este gasit in corpus si are partOfSpeech = noun (poz 0)
                 return PartofSpeechCurrent == 0 ? initialState[PartofSpeechCurrent] : 0;
             }
             else
@@ -459,7 +429,6 @@ namespace POS_Tagging
             string rootPath = @"C:\Users\iulia.severin\source\repos\POS-Tagging\bin\Debug\Brown_Test";
             var files = Directory.GetFiles(rootPath, "*.*", SearchOption.AllDirectories);
             string[] wordTagPair;
-            //string[] line;
             string line;
             var watch = new System.Diagnostics.Stopwatch();
 
@@ -502,7 +471,6 @@ namespace POS_Tagging
                                     RemoveOtherTag(wordTagSplit);
                                     AddWordTagTestArray(wordTagSplit);
                                 }
-                                //-------------------------------
 
                                 viterbiList.Clear();
                                 viterbiPaths.Clear();
@@ -513,9 +481,6 @@ namespace POS_Tagging
                                 numberOfWordsInPhrase = wordTagTestArray.Count();
                                 for (int j = 0; j < wordTagTestArray.Count(); j++)
                                 {
-                                    // string predictedTag = HiddenMarkovModel(wordTagTestArray[j].word, j);
-
-
                                     viterbiList.Add(HiddenMarkovModel(wordTagTestArray[j].word, j, viterbiList.Count == 0 ? null : viterbiList.Last()));
                                 }
 
@@ -523,16 +488,11 @@ namespace POS_Tagging
                                 {
                                     ViterbiPathRec(new ViterbiPath(), lastNodeFromPhrase, 1);
                                     viterbiPaths = viterbiPaths.Where(p => p.nodes.Count == wordTagTestArray.Count()).ToList();
-
                                 }
 
                                 viterbiPaths = viterbiPaths.Where(p => p.nodes.Count == wordTagTestArray.Count()).ToList();
                                 double bestPathValue = viterbiPaths.Max(y => y.value);
                                 ViterbiPath bestPath = viterbiPaths.First(x => x.value == bestPathValue);
-                                //  bestPath.nodes.Reverse();
-
-                                //List<string> predictedTag = bestPath.nodes.Select(x => x.partOfSpeech).ToList();
-
 
                                 for (int j = 0; j < wordTagTestArray.Count(); j++)
                                 {
@@ -638,7 +598,6 @@ namespace POS_Tagging
         }
         private void AddWordTagTestArray(WordTags wordTag)
         {
-
             WordTags finalWordTag = new WordTags();
             WordTags firstWordTag = new WordTags();
             WordTags secondWordTag = new WordTags();
@@ -682,7 +641,6 @@ namespace POS_Tagging
         }
         private void AddWordTagViterbiArray(WordTags wordTag)
         {
-
             WordTags finalWordTag = new WordTags();
             WordTags firstWordTag = new WordTags();
             WordTags secondWordTag = new WordTags();
@@ -726,8 +684,8 @@ namespace POS_Tagging
         }
         private void ReadCorpus()
         {
-            string rootPath = @"C:\Users\iulia.severin\source\repos\POS-Tagging\bin\Debug\Brown";
-            //string rootPath = @"C:\Users\iulia.severin\source\repos\POS-Tagging\bin\Debug\Brown_Train";
+            //string rootPath = @"C:\Users\iulia.severin\source\repos\POS-Tagging\bin\Debug\Brown";
+            string rootPath = @"C:\Users\iulia.severin\source\repos\POS-Tagging\bin\Debug\Brown_Train";
             //string rootPath = @"C:\Users\iulia.severin\source\repos\POS-Tagging\bin\Debug\Brown_Test";
             var files = Directory.GetFiles(rootPath, "*.*", SearchOption.AllDirectories);
             string[] wordTagPair;
@@ -1123,27 +1081,6 @@ namespace POS_Tagging
             }
             Console.WriteLine("Suma coloana Emission Matrix {0}: {1}", value, valueSum);
             return 1.0 * columnSum;
-
-            //MATRICE PROBABILITATI DE EMISIE  
-            //VALUESUM - suma pe linie - cuvantul apple care a aparut de mai multe ori cu parti de vorbire diferite
-            /*int valuePositions = GetTagPosition(value);
-
-            double columnSum = 0;
-
-            for (int i = 0; i < wordTrainArray.Count; i++)
-            {
-                for (int j = 0; j < tagTrainArray.Count; j++)
-                {
-                    valueSum[i] += emissionIntegerTempMatrix[i, j];
-                }
-
-           // for (int i = 0; i < wordTrainArray.Count; i++)
-            //{
-                emissionMatrix[i, valuePositions] = 1.0 * emissionIntegerTempMatrix[i, valuePositions] / valueSum[i];
-                columnSum += emissionMatrix[i, valuePositions];
-            }
-            Console.WriteLine("Suma coloana Emission Matrix {0}: {1}", value, valueSum);
-            return 1.0 * columnSum; */
         }
         private void WriteStatistics(int noOfFiles)
         {
